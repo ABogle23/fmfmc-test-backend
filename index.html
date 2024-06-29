@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Route Planner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-encoded-polyline"></script>
+</head>
+<body>
+<div id="sidebar">
+    <h3>Route Parameters</h3>
+    <form id="routeForm">
+        <div>
+            <label for="startLat">Start Latitude:</label>
+            <input type="text" id="startLat">
+        </div>
+        <div>
+            <label for="startLong">Start Longitude:</label>
+            <input type="text" id="startLong">
+        </div>
+        <div>
+            <label for="endLat">End Latitude:</label>
+            <input type="text" id="endLat">
+        </div>
+        <div>
+            <label for="endLong">End Longitude:</label>
+            <input type="text" id="endLong">
+        </div>
+        <div>
+            <label for="startingBattery">Starting Battery (%):</label>
+            <input type="number" id="startingBattery">
+        </div>
+        <div>
+            <label for="evRange">EV Range (km):</label>
+            <input type="number" id="evRange">
+        </div>
+        <div>
+            <button type="submit">Find Route</button>
+        </div>
+        <div>
+            <button type="button" id="resetButton">Reset Points</button>
+        </div>
+
+    </form>
+</div>
+<div id="map-container">
+    <!--    <div id="map" style="height: 400px;"></div>-->
+    <div id="map" style="height: 100%; "></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
