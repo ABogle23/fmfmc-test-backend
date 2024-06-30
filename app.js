@@ -1,4 +1,3 @@
-
 // https://leafletjs.com/examples/quick-start/
 
 // var map = L.map('map').setView([50.7260, -3.5275], 13);
@@ -30,8 +29,12 @@ function fetchRoute() {
     const endLong = document.getElementById('endLong').value;
     const startingBattery = document.getElementById('startingBattery').value;
     const evRange = document.getElementById('evRange').value;
+    const minChargeLevel = document.getElementById('minChargeLevel').value;
+    const departTime = document.getElementById('departTime').value;
+    const mealTime = document.getElementById('mealTime').value;
+    const breakDuration = document.getElementById('breakDuration').value;
 
-    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}`);
+    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
 
     // call to backend
     fetch('http://localhost:8080/route/find-route', {
@@ -41,13 +44,13 @@ function fetchRoute() {
         },
         // construct JSON route request object
         body: JSON.stringify({
-            startLat, startLong, endLat, endLong, startingBattery, evRange
+            startLat, startLong, endLat, endLong, startingBattery, evRange, minChargeLevel, departTime, mealTime, breakDuration
         })
     }).then(response => response.json())
         .then(data => {
-        console.log(data);
-        displayRoute(data);
-    }).catch(error => console.error('Error:', error));
+            console.log(data);
+            displayRoute(data);
+        }).catch(error => console.error('Error:', error));
 }
 
 function displayRoute(data) {
@@ -159,7 +162,7 @@ var settingStart = true;
 var startMarker, endMarker;
 
 // event listener for map click
-map.on('click', function(e) {
+map.on('click', function (e) {
     // check if both start and end markers are set
     if (startMarker && endMarker) {
         // if so reset markers and input fields
@@ -208,3 +211,5 @@ function resetPoints() {
 
 // event listener for 'resetButton' elem that calls the resetPoints() function when clicked
 document.getElementById('resetButton').addEventListener('click', resetPoints);
+
+
