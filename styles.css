@@ -1,19 +1,33 @@
 /*#map { height: 400px; width: calc(100% - 300px); float: right; }*/
 /*#sidebar { width: 300px; float: left; }*/
 
-#map-container {
-    width: 87%;
+/*#map-container {*/
+/*    width: 87%;*/
+/*    height: 90vh;*/
+/*    float: right;*/
+/*}*/
+/*#sidebar {*/
+/*    width: 13%;*/
+/*    min-width: 180px;*/
+/*    float: left;*/
+/*    height: 90vh;*/
+/*    overflow-y: auto;*/
+/*}*/
+#container {
+    display: flex;
     height: 90vh;
-    float: right;
 }
+
 #sidebar {
-    width: 13%;
+    flex: 1;
     min-width: 180px;
-    float: left;
-    height: 90vh;
     overflow-y: auto;
 }
 
+#map-container {
+    flex: 6;
+    height: 100%;
+}
 .custom-div-icon {
     position: relative;
     top: -10px;

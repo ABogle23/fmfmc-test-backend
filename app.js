@@ -33,8 +33,9 @@ function fetchRoute() {
     const departTime = document.getElementById('departTime').value;
     const mealTime = document.getElementById('mealTime').value;
     const breakDuration = document.getElementById('breakDuration').value;
+    const eatingOptions = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
 
-    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
+    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Food Preferences: ${eatingOptions}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
 
     // call to backend
     fetch('http://localhost:8080/route/find-route', {
@@ -44,7 +45,7 @@ function fetchRoute() {
         },
         // construct JSON route request object
         body: JSON.stringify({
-            startLat, startLong, endLat, endLong, startingBattery, evRange, minChargeLevel, departTime, mealTime, breakDuration
+            startLat, startLong, endLat, endLong, startingBattery, evRange, minChargeLevel, eatingOptions, departTime, mealTime, breakDuration
         })
     }).then(response => response.json())
         .then(data => {
@@ -68,6 +69,17 @@ function displayRoute(data) {
     var polylinePoints = decodePolyline(data.route_polyline);
     var polyline = L.polyline(polylinePoints, {color: 'blue'}).addTo(map);
     map.fitBounds(polyline.getBounds());
+
+
+    if (data.tmp_polygon) {
+        var polygonPoints = decodePolyline(data.tmp_polygon);
+        var polygon = L.polygon(polygonPoints, {
+            color: 'green', // Outline color of the polygon
+            fillOpacity: 0.2, // Set low fill opacity to not obscure map details
+            weight: 2 // Border thickness
+        }).addTo(map);
+    }
+
 
     // add markers for chargers from backend response
     data.chargers.forEach(charger => {
