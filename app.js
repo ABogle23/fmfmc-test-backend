@@ -34,8 +34,36 @@ function fetchRoute() {
     const mealTime = document.getElementById('mealTime').value;
     const breakDuration = document.getElementById('breakDuration').value;
     const eatingOptions = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
+    const connectionTypes = Array.from(document.getElementById('connectionTypes').selectedOptions).map(option => option.value);
+    const minKwChargeSpeed = document.getElementById('minKwChargeSpeed').value;
+    const maxKwChargeSpeed = document.getElementById('maxKwChargeSpeed').value;
+    const minNoChargePoints = document.getElementById('minNoChargePoints').value;
+    const minPrice = document.getElementById('minPrice').value;
+    const maxPrice = document.getElementById('maxPrice').value;
 
-    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Food Preferences: ${eatingOptions}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
+    const requestBody = {
+        startLat,
+        startLong,
+        endLat,
+        endLong,
+        startingBattery,
+        evRange,
+        minChargeLevel,
+        departTime,
+        mealTime,
+        breakDuration,
+        eatingOptions,
+        connectionTypes,
+        minKwChargeSpeed,
+        maxKwChargeSpeed,
+        minNoChargePoints,
+        minPrice,
+        maxPrice
+    };
+
+    console.log(requestBody);
+
+    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Connection Types: ${connectionTypes},Food Preferences: ${eatingOptions}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
 
     // call to backend
     fetch('http://localhost:8080/route/find-route', {
@@ -44,9 +72,7 @@ function fetchRoute() {
             'Content-Type': 'application/json',
         },
         // construct JSON route request object
-        body: JSON.stringify({
-            startLat, startLong, endLat, endLong, startingBattery, evRange, minChargeLevel, eatingOptions, departTime, mealTime, breakDuration
-        })
+        body: JSON.stringify(requestBody)
     }).then(response => response.json())
         .then(data => {
             console.log(data);

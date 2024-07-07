@@ -44,6 +44,34 @@
                 <label for="minChargeLevel">Min Charge Level (%):</label>
                 <input type="number" id="minChargeLevel" value="20">
             </div>
+
+            <div>
+                <label for="connectionTypes">Connection Type:</label>
+                <select id="connectionTypes" multiple>
+                    <option value="type2">Type 2</option>
+                    <option value="type1">Type 1</option>
+                    <option value="chademo">CHAdeMO</option>
+                    <option value="ccs">CCS</option>
+                    <option value="tesla">Tesla</option>
+                    <option value="domestic3Pin">Domestic 3-Pin</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="minKwChargeSpeed">Min Charge Speed (kW):</label>
+                <input type="number" id="minKwChargeSpeed" value="">
+            </div>
+
+            <div>
+                <label for="maxKwChargeSpeed">Max Charge Speed (kW):</label>
+                <input type="number" id="maxKwChargeSpeed" value="">
+            </div>
+
+            <div>
+                <label for="minNoChargePoints">Min Charge Points:</label>
+                <input type="number" id="minNoChargePoints" value="">
+            </div>
+
             <div>
                 <label for="foodPreferences">Food Preferences:</label>
                 <select id="foodPreferences" multiple>
@@ -53,6 +81,18 @@
                     <option value="bar">Bar</option>
                 </select>
             </div>
+
+            <div>
+                <label for="minPrice">Min Price Range (1-4):</label>
+                <input type="number" id="minPrice" value="">
+            </div>
+
+            <div>
+                <label for="maxPrice">Max Price Range (1-4):</label>
+                <input type="number" id="maxPrice" value="">
+            </div>
+
+
             <div>
                 <label for="departTime">Departure Time:</label>
                 <input type="time" id="departTime" value="11:00">
