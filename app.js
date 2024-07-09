@@ -35,6 +35,7 @@ function fetchRoute() {
     const breakDuration = document.getElementById('breakDuration').value;
     const eatingOptions = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
     const connectionTypes = Array.from(document.getElementById('connectionTypes').selectedOptions).map(option => option.value);
+    const accessTypes = Array.from(document.getElementById('accessTypes').selectedOptions).map(option => option.value);
     const minKwChargeSpeed = document.getElementById('minKwChargeSpeed').value;
     const maxKwChargeSpeed = document.getElementById('maxKwChargeSpeed').value;
     const minNoChargePoints = document.getElementById('minNoChargePoints').value;
@@ -54,6 +55,7 @@ function fetchRoute() {
         breakDuration,
         eatingOptions,
         connectionTypes,
+        accessTypes,
         minKwChargeSpeed,
         maxKwChargeSpeed,
         minNoChargePoints,
