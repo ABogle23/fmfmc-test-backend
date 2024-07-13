@@ -16,6 +16,8 @@
 #container {
     display: flex;
     height: 90vh;
+    position: relative; /* Ensure container is positioned relatively */
+
 }
 
 #sidebar {
@@ -34,6 +36,11 @@
     left: -10px;
 }
 
+.popup-content {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 label {
     display: block;
 }
@@ -41,3 +48,23 @@ label {
 #routeForm div {
     margin-bottom: 5px;
 }
+
+#loadingOverlay {
+    position: fixed;  /* Change from absolute to fixed to cover the whole screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+    z-index: 1000;  /* Make sure it's above everything */
+    display: none;  /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: #FFF; /* White color for the loading text */
+}
+
+#sidebar.blurred {
+    backdrop-filter: blur(8px); /* Apply blur effect when class 'blurred' is added */
+}
+

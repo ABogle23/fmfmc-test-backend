@@ -18,32 +18,45 @@
         <form id="routeForm">
             <div>
                 <label for="startLat">Start Latitude:</label>
-                <input type="text" id="startLat" placeholder="Enter start latitude" value="50.167938">
+                <input type="text" id="startLat" placeholder="Enter start latitude" value="50.672555">
             </div>
             <div>
                 <label for="startLong">Start Longitude:</label>
-                <input type="text" id="startLong" placeholder="Enter start longitude" value="-5.191222">
+                <input type="text" id="startLong" placeholder="Enter start longitude" value="-4.240029">
             </div>
             <div>
                 <label for="endLat">End Latitude:</label>
-                <input type="text" id="endLat" placeholder="Enter end latitude" value="51.998583">
+                <input type="text" id="endLat" placeholder="Enter end latitude" value="51.165739">
             </div>
             <div>
                 <label for="endLong">End Longitude:</label>
-                <input type="text" id="endLong" placeholder="Enter end longitude" value="-0.986085">
+                <input type="text" id="endLong" placeholder="Enter end longitude" value="-1.919691">
             </div>
             <div>
                 <label for="startingBattery">Starting Battery (%):</label>
-                <input type="number" id="startingBattery" value="50">
+                <input type="number" id="startingBattery" value="90">
             </div>
             <div>
                 <label for="evRange">EV Range (km):</label>
-                <input type="number" id="evRange" value="300">
+                <input type="number" id="evRange" value="100">
+            </div>
+            <div>
+                <label for="batteryCapacity">Battery Capacity (kWh):</label>
+                <input type="number" id="batteryCapacity" value="">
             </div>
             <div>
                 <label for="minChargeLevel">Min Charge Level (%):</label>
                 <input type="number" id="minChargeLevel" value="20">
             </div>
+            <div>
+                <label for="chargeLevelAfterEachStop">Charge Level After Each Stop (%):</label>
+                <input type="number" id="chargeLevelAfterEachStop" value="90">
+            </div>
+            <div>
+                <label for="finalDestinationChargeLevel">Final Destination Charge Level(%):</label>
+                <input type="number" id="finalDestinationChargeLevel" value="20">
+            </div>
+
 
             <div>
                 <label for="connectionTypes">Connection Type:</label>
@@ -87,6 +100,14 @@
                     <option value="restaurant">Restaurant</option>
                     <option value="cafe">Cafe</option>
                     <option value="bar">Bar</option>
+                    <option value="serviceStation">Service Station</option>
+                    <option value="newsagent">Newsagent</option>
+                    <option value="supermarket">Supermarket</option>
+                    <option value="pizzaRestaurant">Pizza</option>
+                    <option value="fastFood">Fast Food</option>
+                    <option value="asianRestaurant">Asian</option>
+                    <option value="italianRestaurant">Italian</option>
+                    <option value="greekRestaurant">Greek</option>
                 </select>
             </div>
 
@@ -127,6 +148,8 @@
     </div>
     <div id="map-container">
         <!--    <div id="map" style="height: 400px;"></div>-->
+        <div id="loadingOverlay">Loading...</div>
+
         <div id="map" style="height: 100%; "></div>
     </div>
 </div>

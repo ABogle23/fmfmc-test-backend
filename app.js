@@ -16,6 +16,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
 }).addTo(map);
 
+
 document.getElementById('routeForm').onsubmit = function (event) {
     event.preventDefault();
     fetchRoute();
@@ -27,9 +28,12 @@ function fetchRoute() {
     const startLong = document.getElementById('startLong').value;
     const endLat = document.getElementById('endLat').value;
     const endLong = document.getElementById('endLong').value;
-    const startingBattery = document.getElementById('startingBattery').value;
-    const evRange = document.getElementById('evRange').value;
-    const minChargeLevel = document.getElementById('minChargeLevel').value;
+    const startingBattery = document.getElementById('startingBattery').value/100;
+    const evRange = document.getElementById('evRange').value*1000;
+    const batteryCapacity = document.getElementById('batteryCapacity').value;
+    const minChargeLevel = document.getElementById('minChargeLevel').value/100;
+    const chargeLevelAfterEachStop = document.getElementById('chargeLevelAfterEachStop').value/100;
+    const finalDestinationChargeLevel = document.getElementById('finalDestinationChargeLevel').value/100;
     const departTime = document.getElementById('departTime').value;
     const mealTime = document.getElementById('mealTime').value;
     const breakDuration = document.getElementById('breakDuration').value;
@@ -42,6 +46,9 @@ function fetchRoute() {
     const minPrice = document.getElementById('minPrice').value;
     const maxPrice = document.getElementById('maxPrice').value;
 
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('sidebar').classList.add('blurred');
+
     const requestBody = {
         startLat,
         startLong,
@@ -49,7 +56,10 @@ function fetchRoute() {
         endLong,
         startingBattery,
         evRange,
+        batteryCapacity,
         minChargeLevel,
+        chargeLevelAfterEachStop,
+        finalDestinationChargeLevel,
         departTime,
         mealTime,
         breakDuration,
@@ -78,8 +88,15 @@ function fetchRoute() {
     }).then(response => response.json())
         .then(data => {
             console.log(data);
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('sidebar').classList.remove('blurred');
             displayRoute(data);
-        }).catch(error => console.error('Error:', error));
+        }).catch(error => {
+        console.error('Error:', error);
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('sidebar').classList.remove('blurred');
+        alert('An error occurred while fetching the route');
+    });
 }
 
 function displayRoute(data) {
@@ -99,8 +116,8 @@ function displayRoute(data) {
     map.fitBounds(polyline.getBounds());
 
 
-    if (data.tmp_polygon) {
-        var polygonPoints = decodePolyline(data.tmp_polygon);
+    if (data.charger_polygon) {
+        var polygonPoints = decodePolyline(data.charger_polygon);
         var polygon = L.polygon(polygonPoints, {
             color: 'green', // Outline color of the polygon
             fillOpacity: 0.2, // Set low fill opacity to not obscure map details
@@ -109,21 +126,39 @@ function displayRoute(data) {
     }
 
 
+    if (data.eating_option_polygon) {
+        var foursquarePolygonPoints = decodeEatingOptionPolygon(data.eating_option_polygon);
+        var foursquarePolygon = L.polygon(foursquarePolygonPoints, {
+            color: 'orange', // A different color, e.g., orange
+            fillOpacity: 0.3, // Less transparent
+            weight: 1 // Border thickness
+        }).addTo(map);
+    }
+
+
     // add markers for chargers from backend response
     data.chargers.forEach(charger => {
         if (charger.geocodes) {
+            const content = getAllMarkerContent(charger);
             L.marker([charger.geocodes.latitude, charger.geocodes.longitude])
-                .bindPopup(`Charger ID: ${charger.id}`)
+                .bindPopup(content)
                 .addTo(map);
+            // L.marker([charger.geocodes.latitude, charger.geocodes.longitude])
+            //     .bindPopup(`Charger ID: ${charger.id}`)
+            //     .addTo(map);
         }
     });
 
     // add markers for food establishments from backend response
     data.food_establishments.forEach(establishment => {
         if (establishment.geocodes) {
+            const content = getAllMarkerContent(establishment);
             L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
-                .bindPopup(`Food Establishment: ${establishment.name}`)
+                .bindPopup(content)
                 .addTo(map);
+            // L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
+            //     .bindPopup(`Food Establishment: ${establishment.name}`)
+            //     .addTo(map);
         }
     });
 
@@ -136,6 +171,28 @@ function displayRoute(data) {
         [data.context.startLat, data.context.startLong],
         [data.context.endLat, data.context.endLong]
     ]);
+}
+
+
+// show all content for eatingOption/charger markers
+function getAllMarkerContent(dataObject, level = 0) {
+    let content = '<div class="popup-content" style="margin-left: ' + (level * 10) + 'px;">';
+    for (const [key, value] of Object.entries(dataObject)) {
+        if (typeof value === 'object' && value !== null) {
+            content += `<div><strong>${key}:</strong></div>`;
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    content += `<div>${index + 1}: ${typeof item === 'object' ? getAllMarkerContent(item, level + 1) : item}</div>`;
+                });
+            } else {
+                content += getAllMarkerContent(value, level + 1);
+            }
+        } else {
+            content += `<div><strong>${key}:</strong> ${value}</div>`;
+        }
+    }
+    content += '</div>';
+    return content;
 }
 
 // function to decode polyline returned from backend
@@ -167,6 +224,19 @@ function decodePolyline(encoded) {
     }
     return points;
 }
+
+
+function decodeEatingOptionPolygon(encodedString) {
+    // Split the string by '~' to get each coordinate pair
+    const pairs = encodedString.split('~');
+    // Map over each pair, split by ',', and convert each to a float
+    const points = pairs.map(pair => {
+        const [lat, lng] = pair.split(',').map(Number);
+        return [lat, lng];
+    });
+    return points;
+}
+
 
 // custom icon for polyline start icon
 var startIcon = L.divIcon({
