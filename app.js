@@ -87,6 +87,9 @@ function fetchRoute() {
         body: JSON.stringify(requestBody)
     }).then(response => response.json())
         .then(data => {
+            const dataSizeBytes = new TextEncoder().encode(JSON.stringify(data)).length;
+            const dataSizeKb = dataSizeBytes / 1024;
+            console.log(`Response size: ${dataSizeKb.toFixed(2)} KB`);
             console.log(data);
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('sidebar').classList.remove('blurred');
@@ -100,7 +103,7 @@ function fetchRoute() {
 }
 
 function displayRoute(data) {
-    // Clear existing map layers
+    // clear existing map layers
     map.eachLayer(function (layer) {
         if (!!layer.toGeoJSON) {
             map.removeLayer(layer);
@@ -115,6 +118,14 @@ function displayRoute(data) {
     var polyline = L.polyline(polylinePoints, {color: 'blue'}).addTo(map);
     map.fitBounds(polyline.getBounds());
 
+    // polyline prior to route optimisaton for food stops
+    var originalRoutePoints = decodePolyline(data.original_route_polyline);
+    var originalRoute = L.polyline(originalRoutePoints, {
+        color: 'red',
+        weight: 4,
+        dashArray: '10, 10',
+        opacity: 0.7
+    }).addTo(map);
 
     if (data.charger_polygon) {
         var polygonPoints = decodePolyline(data.charger_polygon);
