@@ -22,7 +22,7 @@
 
 #sidebar {
     flex: 1;
-    min-width: 180px;
+    min-width: 220px;
     overflow-y: auto;
 }
 
@@ -47,6 +47,11 @@ label {
 
 #routeForm div {
     margin-bottom: 5px;
+}
+
+#routeForm input, #routeForm select {
+    width: 150px;
+    box-sizing: border-box;
 }
 
 #loadingOverlay {

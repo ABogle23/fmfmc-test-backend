@@ -22,7 +22,53 @@ document.getElementById('routeForm').onsubmit = function (event) {
     fetchRoute();
 };
 
-// function to call backend to fetch route
+document.addEventListener('DOMContentLoaded', function() {
+    fetchVehicles();
+    console.log('Page fully loaded and script running');
+});
+
+// fetch vehicles from backend
+function fetchVehicles() {
+    fetch('http://localhost:8080/api/vehicles/all')
+        .then(response => response.json())
+        .then(data => {
+            const dataSizeBytes = new TextEncoder().encode(JSON.stringify(data)).length;
+            const dataSizeKb = dataSizeBytes / 1024;
+            console.log(`Response size: ${dataSizeKb.toFixed(2)} KB`);
+            console.log("Results returned: " + data.length);
+
+            data.sort((a, b) => {
+                // sort by brand
+                if (a.brand < b.brand) return -1;
+                if (a.brand > b.brand) return 1;
+                // sort by model
+                if (a.model < b.model) return -1;
+                if (a.model > b.model) return 1;
+                return 0;
+            });
+
+            const vehicleDropdown = document.getElementById('selectedVehicle');
+            data.forEach(vehicle => {
+                const option = new Option(`${vehicle.brand} ${vehicle.model} (${vehicle.battery_capacity} kWh)`, vehicle.id);
+                option.setAttribute('data-ev-range', vehicle.ev_range);
+                option.setAttribute('data-battery-capacity', vehicle.battery_capacity);
+                vehicleDropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching vehicles:', error));
+}
+
+// add event listener to selectedVehicle dropdown to update evRange and batteryCapacity fields
+document.getElementById('selectedVehicle').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const evRange = Math.round(parseFloat(selectedOption.getAttribute('data-ev-range')));
+    const batteryCapacity = selectedOption.getAttribute('data-battery-capacity');
+    document.getElementById('evRange').value = evRange || '';
+    document.getElementById('batteryCapacity').value = batteryCapacity || '';
+});
+
+
+// fetch and display route from backend
 function fetchRoute() {
     const startLat = document.getElementById('startLat').value;
     const startLong = document.getElementById('startLong').value;
@@ -36,6 +82,7 @@ function fetchRoute() {
     const finalDestinationChargeLevel = document.getElementById('finalDestinationChargeLevel').value/100;
     const departTime = document.getElementById('departTime').value;
     const mealTime = document.getElementById('mealTime').value;
+    const stoppingRange = document.getElementById('stoppingRange').value;
     const breakDuration = document.getElementById('breakDuration').value;
     const eatingOptions = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
     const connectionTypes = Array.from(document.getElementById('connectionTypes').selectedOptions).map(option => option.value);
@@ -45,6 +92,11 @@ function fetchRoute() {
     const minNoChargePoints = document.getElementById('minNoChargePoints').value;
     const minPrice = document.getElementById('minPrice').value;
     const maxPrice = document.getElementById('maxPrice').value;
+    const maxWalkingDistance = document.getElementById('maxWalkingDistance').value;
+    const eatingOptionSearchDeviation = document.getElementById('eatingOptionSearchDeviation').value;
+    const includeAlternativeEatingOptions = document.getElementById('includeAlternativeEatingOptions').checked;
+    const electricVehicleId = document.getElementById('selectedVehicle').value; // Retrieve the selected vehicle's ID
+
 
     document.getElementById('loadingOverlay').style.display = 'flex';
     document.getElementById('sidebar').classList.add('blurred');
@@ -62,6 +114,7 @@ function fetchRoute() {
         finalDestinationChargeLevel,
         departTime,
         mealTime,
+        stoppingRange: stoppingRange === "" ? null : stoppingRange,
         breakDuration,
         eatingOptions,
         connectionTypes,
@@ -70,12 +123,17 @@ function fetchRoute() {
         maxKwChargeSpeed,
         minNoChargePoints,
         minPrice,
-        maxPrice
+        maxPrice,
+        maxWalkingDistance,
+        eatingOptionSearchDeviation: eatingOptionSearchDeviation === "" ? null : eatingOptionSearchDeviation,
+        includeAlternativeEatingOptions,
+        electricVehicleId
     };
 
     console.log(requestBody);
 
     console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Connection Types: ${connectionTypes},Food Preferences: ${eatingOptions}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
+
 
     // call to backend
     fetch('http://localhost:8080/route/find-route', {
@@ -114,7 +172,7 @@ function displayRoute(data) {
     // L.polyline(decodePolyline(data.route_polyline), {color: 'blue'}).addTo(map);
 
     // decode polyline and add to map
-    var polylinePoints = decodePolyline(data.route_polyline);
+    var polylinePoints = decodePolyline(data.final_route_polyline);
     var polyline = L.polyline(polylinePoints, {color: 'blue'}).addTo(map);
     map.fitBounds(polyline.getBounds());
 
@@ -161,15 +219,26 @@ function displayRoute(data) {
     });
 
     // add markers for food establishments from backend response
+    // data.food_establishments.forEach(establishment => {
+    //     if (establishment.geocodes) {
+    //         const content = getAllMarkerContent(establishment);
+    //         L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
+    //             .bindPopup(content)
+    //             .addTo(map);
+    //         // L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
+    //         //     .bindPopup(`Food Establishment: ${establishment.name}`)
+    //         //     .addTo(map);
+    //     }
+    // });
+    let isFirstMarker = true;
     data.food_establishments.forEach(establishment => {
         if (establishment.geocodes) {
             const content = getAllMarkerContent(establishment);
-            L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
+            L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude],
+                {icon: isFirstMarker ? firstFoodIcon : subsequentFoodIcon})
                 .bindPopup(content)
                 .addTo(map);
-            // L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
-            //     .bindPopup(`Food Establishment: ${establishment.name}`)
-            //     .addTo(map);
+            isFirstMarker = false;
         }
     });
 
@@ -265,9 +334,19 @@ var endIcon = L.divIcon({
     iconAnchor: [10, 10]
 });
 
-// custom icon for food establishments
-var foodIcon = new L.Icon({
+// custom icon for first i.e. optimal food establishment
+var firstFoodIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+// custom icon for subsequent food establishments
+var subsequentFoodIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
