@@ -102,6 +102,11 @@
             </div>
 
             <div>
+                <label for="stopForEating">Stop For Eating:</label>
+                <input type="checkbox" id="stopForEating" checked>
+            </div>
+
+            <div>
                 <label for="foodPreferences">Food Preferences:</label>
                 <select id="foodPreferences" multiple>
                     <option value="foodRetailer">Food Retailer</option>
@@ -195,7 +200,7 @@
     </div>
 </div>
 
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var selectElement = document.getElementById('selectedVehicle');

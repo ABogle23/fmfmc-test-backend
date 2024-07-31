@@ -1,5 +1,4 @@
 // https://leafletjs.com/examples/quick-start/
-
 // var map = L.map('map').setView([50.7260, -3.5275], 13);
 var map = L.map('map', {
     center: [55.3781, -3.4360], // center of the map (approximate center of UK)
@@ -11,6 +10,8 @@ var map = L.map('map', {
     minZoom: 5,
     maxZoom: 16
 });
+
+import { FMFMC_API_KEY } from './secrets.js';
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
@@ -29,7 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // fetch vehicles from backend
 function fetchVehicles() {
-    fetch('http://localhost:8080/api/vehicles/all')
+    fetch('https://localhost:8080/api/vehicles/all', {
+        method: 'GET',
+        headers: {
+            // 'Content-Type': 'application/json',
+            'X-API-Key': FMFMC_API_KEY
+        }})
         .then(response => response.json())
         .then(data => {
             const dataSizeBytes = new TextEncoder().encode(JSON.stringify(data)).length;
@@ -95,7 +101,8 @@ function fetchRoute() {
     const maxWalkingDistance = document.getElementById('maxWalkingDistance').value;
     const eatingOptionSearchDeviation = document.getElementById('eatingOptionSearchDeviation').value;
     const includeAlternativeEatingOptions = document.getElementById('includeAlternativeEatingOptions').checked;
-    const electricVehicleId = document.getElementById('selectedVehicle').value; // Retrieve the selected vehicle's ID
+    const electricVehicleId = document.getElementById('selectedVehicle').value;
+    const stopForEating = document.getElementById('stopForEating').checked;
 
 
     document.getElementById('loadingOverlay').style.display = 'flex';
@@ -127,7 +134,8 @@ function fetchRoute() {
         maxWalkingDistance,
         eatingOptionSearchDeviation: eatingOptionSearchDeviation === "" ? null : eatingOptionSearchDeviation,
         includeAlternativeEatingOptions,
-        electricVehicleId
+        electricVehicleId,
+        stopForEating
     };
 
     console.log(requestBody);
@@ -136,10 +144,11 @@ function fetchRoute() {
 
 
     // call to backend
-    fetch('http://localhost:8080/route/find-route', {
+    fetch('https://localhost:8080/api/find-route', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-API-Key': FMFMC_API_KEY
         },
         // construct JSON route request object
         body: JSON.stringify(requestBody)
@@ -151,7 +160,7 @@ function fetchRoute() {
             console.log(data);
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('sidebar').classList.remove('blurred');
-            displayRoute(data);
+            displayRoute(data.data);
         }).catch(error => {
         console.error('Error:', error);
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -196,7 +205,7 @@ function displayRoute(data) {
 
 
     if (data.eating_option_polygon) {
-        var foursquarePolygonPoints = decodeEatingOptionPolygon(data.eating_option_polygon);
+        var foursquarePolygonPoints = decodePolyline(data.eating_option_polygon);
         var foursquarePolygon = L.polygon(foursquarePolygonPoints, {
             color: 'orange', // A different color, e.g., orange
             fillOpacity: 0.3, // Less transparent
@@ -204,6 +213,16 @@ function displayRoute(data) {
         }).addTo(map);
     }
 
+    if (data.eating_search_circles) {
+        data.eating_search_circles.forEach(encodedCircle => {
+            var searchCirclePoints = decodePolyline(encodedCircle);
+            var searchCircle = L.polygon(searchCirclePoints, {
+                color: 'blue', // A different color, e.g., orange
+                fillOpacity: 0.1, // Less transparent
+                weight: 1 // Border thickness
+            }).addTo(map);
+        });
+    }
 
     // add markers for chargers from backend response
     data.chargers.forEach(charger => {
@@ -306,16 +325,16 @@ function decodePolyline(encoded) {
 }
 
 
-function decodeEatingOptionPolygon(encodedString) {
-    // Split the string by '~' to get each coordinate pair
-    const pairs = encodedString.split('~');
-    // Map over each pair, split by ',', and convert each to a float
-    const points = pairs.map(pair => {
-        const [lat, lng] = pair.split(',').map(Number);
-        return [lat, lng];
-    });
-    return points;
-}
+// function decodeEatingOptionPolygon(encodedString) {
+//     // Split the string by '~' to get each coordinate pair
+//     const pairs = encodedString.split('~');
+//     // Map over each pair, split by ',', and convert each to a float
+//     const points = pairs.map(pair => {
+//         const [lat, lng] = pair.split(',').map(Number);
+//         return [lat, lng];
+//     });
+//     return points;
+// }
 
 
 // custom icon for polyline start icon
