@@ -87,7 +87,6 @@ function fetchRoute() {
     const charge_level_after_each_stop = document.getElementById('chargeLevelAfterEachStop').value/100;
     const final_destination_charge_level = document.getElementById('finalDestinationChargeLevel').value/100;
     const depart_time = document.getElementById('departTime').value;
-    const meal_time = document.getElementById('mealTime').value;
     const stopping_range = document.getElementById('stoppingRange').value;
     const break_duration = document.getElementById('breakDuration').value;
     const eating_options = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
@@ -120,7 +119,6 @@ function fetchRoute() {
         charge_level_after_each_stop,
         final_destination_charge_level,
         depart_time,
-        meal_time,
         stopping_range: stopping_range === "" ? null : stopping_range,
         break_duration,
         eating_options,
