@@ -76,71 +76,71 @@ document.getElementById('selectedVehicle').addEventListener('change', function()
 
 // fetch and display route from backend
 function fetchRoute() {
-    const startLat = document.getElementById('startLat').value;
-    const startLong = document.getElementById('startLong').value;
-    const endLat = document.getElementById('endLat').value;
-    const endLong = document.getElementById('endLong').value;
-    const startingBattery = document.getElementById('startingBattery').value/100;
-    const evRange = document.getElementById('evRange').value*1000;
-    const batteryCapacity = document.getElementById('batteryCapacity').value;
-    const minChargeLevel = document.getElementById('minChargeLevel').value/100;
-    const chargeLevelAfterEachStop = document.getElementById('chargeLevelAfterEachStop').value/100;
-    const finalDestinationChargeLevel = document.getElementById('finalDestinationChargeLevel').value/100;
-    const departTime = document.getElementById('departTime').value;
-    const mealTime = document.getElementById('mealTime').value;
-    const stoppingRange = document.getElementById('stoppingRange').value;
-    const breakDuration = document.getElementById('breakDuration').value;
-    const eatingOptions = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
-    const connectionTypes = Array.from(document.getElementById('connectionTypes').selectedOptions).map(option => option.value);
-    const accessTypes = Array.from(document.getElementById('accessTypes').selectedOptions).map(option => option.value);
-    const minKwChargeSpeed = document.getElementById('minKwChargeSpeed').value;
-    const maxKwChargeSpeed = document.getElementById('maxKwChargeSpeed').value;
-    const minNoChargePoints = document.getElementById('minNoChargePoints').value;
-    const minPrice = document.getElementById('minPrice').value;
-    const maxPrice = document.getElementById('maxPrice').value;
-    const maxWalkingDistance = document.getElementById('maxWalkingDistance').value;
-    const eatingOptionSearchDeviation = document.getElementById('eatingOptionSearchDeviation').value;
-    const includeAlternativeEatingOptions = document.getElementById('includeAlternativeEatingOptions').checked;
-    const electricVehicleId = document.getElementById('selectedVehicle').value;
-    const stopForEating = document.getElementById('stopForEating').checked;
+    const start_lat = document.getElementById('startLat').value;
+    const start_long = document.getElementById('startLong').value;
+    const end_lat = document.getElementById('endLat').value;
+    const end_long = document.getElementById('endLong').value;
+    const starting_battery = document.getElementById('startingBattery').value/100;
+    const ev_range = document.getElementById('evRange').value*1000;
+    const battery_capacity = document.getElementById('batteryCapacity').value;
+    const min_charge_level = document.getElementById('minChargeLevel').value/100;
+    const charge_level_after_each_stop = document.getElementById('chargeLevelAfterEachStop').value/100;
+    const final_destination_charge_level = document.getElementById('finalDestinationChargeLevel').value/100;
+    const depart_time = document.getElementById('departTime').value;
+    const meal_time = document.getElementById('mealTime').value;
+    const stopping_range = document.getElementById('stoppingRange').value;
+    const break_duration = document.getElementById('breakDuration').value;
+    const eating_options = Array.from(document.getElementById('foodPreferences').selectedOptions).map(option => option.value);
+    const connection_types = Array.from(document.getElementById('connectionTypes').selectedOptions).map(option => option.value);
+    const access_types = Array.from(document.getElementById('accessTypes').selectedOptions).map(option => option.value);
+    const min_kw_charge_speed = document.getElementById('minKwChargeSpeed').value;
+    const max_kw_charge_speed = document.getElementById('maxKwChargeSpeed').value;
+    const min_no_charge_points = document.getElementById('minNoChargePoints').value;
+    const min_price = document.getElementById('minPrice').value;
+    const max_price = document.getElementById('maxPrice').value;
+    const max_walking_distance = document.getElementById('maxWalkingDistance').value;
+    const eating_option_search_deviation = document.getElementById('eatingOptionSearchDeviation').value;
+    const include_alternative_eating_options = document.getElementById('includeAlternativeEatingOptions').checked;
+    const electric_vehicle_id = document.getElementById('selectedVehicle').value;
+    const stop_for_eating = document.getElementById('stopForEating').checked;
 
 
     document.getElementById('loadingOverlay').style.display = 'flex';
     document.getElementById('sidebar').classList.add('blurred');
 
     const requestBody = {
-        startLat,
-        startLong,
-        endLat,
-        endLong,
-        startingBattery,
-        evRange,
-        batteryCapacity,
-        minChargeLevel,
-        chargeLevelAfterEachStop,
-        finalDestinationChargeLevel,
-        departTime,
-        mealTime,
-        stoppingRange: stoppingRange === "" ? null : stoppingRange,
-        breakDuration,
-        eatingOptions,
-        connectionTypes,
-        accessTypes,
-        minKwChargeSpeed,
-        maxKwChargeSpeed,
-        minNoChargePoints,
-        minPrice,
-        maxPrice,
-        maxWalkingDistance,
-        eatingOptionSearchDeviation: eatingOptionSearchDeviation === "" ? null : eatingOptionSearchDeviation,
-        includeAlternativeEatingOptions,
-        electricVehicleId,
-        stopForEating
+        start_lat,
+        start_long,
+        end_lat,
+        end_long,
+        starting_battery,
+        ev_range,
+        battery_capacity,
+        min_charge_level,
+        charge_level_after_each_stop,
+        final_destination_charge_level,
+        depart_time,
+        meal_time,
+        stopping_range: stopping_range === "" ? null : stopping_range,
+        break_duration,
+        eating_options,
+        connection_types,
+        access_types,
+        min_kw_charge_speed,
+        max_kw_charge_speed,
+        min_no_charge_points,
+        min_price,
+        max_price,
+        max_walking_distance,
+        eating_option_search_deviation: eating_option_search_deviation === "" ? null : eating_option_search_deviation,
+        include_alternative_eating_options,
+        electric_vehicle_id,
+        stop_for_eating
     };
 
     console.log(requestBody);
 
-    console.log(`Start Lat: ${startLat}, Start Long: ${startLong}, End Lat: ${endLat}, End Long: ${endLong}, Starting Battery: ${startingBattery}, EV Range: ${evRange}, Min Charge Level: ${minChargeLevel}, Connection Types: ${connectionTypes},Food Preferences: ${eatingOptions}, Depart Time: ${departTime}, Meal Time: ${mealTime}, Break Duration: ${breakDuration}`);
+    console.log(`Start Lat: ${start_lat}, Start Long: ${start_long}, End Lat: ${end_lat}, End Long: ${end_long}, Starting Battery: ${starting_battery}, EV Range: ${ev_range}, Min Charge Level: ${min_charge_level}, Connection Types: ${connection_types},Food Preferences: ${eating_options}, Depart Time: ${depart_time}, Meal Time: ${meal_time}, Break Duration: ${break_duration}`);
 
 
     // call to backend
@@ -262,13 +262,13 @@ function displayRoute(data) {
     });
 
     // add start and end location pins
-    L.marker([data.context.startLat, data.context.startLong], {icon: startIcon}).bindPopup('Start Location').addTo(map);
-    L.marker([data.context.endLat, data.context.endLong], {icon: endIcon}).bindPopup('End Location').addTo(map);
+    L.marker([data.context.start_lat, data.context.start_long], {icon: startIcon}).bindPopup('Start Location').addTo(map);
+    L.marker([data.context.end_lat, data.context.end_long], {icon: endIcon}).bindPopup('End Location').addTo(map);
 
     // adjust map view once route is returned
     map.fitBounds([
-        [data.context.startLat, data.context.startLong],
-        [data.context.endLat, data.context.endLong]
+        [data.context.start_lat, data.context.start_long],
+        [data.context.end_lat, data.context.end_long]
     ]);
 }
 
