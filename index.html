@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EV Route Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider/distribute/nouislider.min.css">
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+    <!--    mapbox-->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet'/>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+
+
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -13,192 +31,344 @@
 <body>
 <div id="container">
 
-    <div id="sidebar">
-        <h3>Route Parameters</h3>
-        <form id="routeForm">
-            <div>
-                <label for="startLat">Start Latitude:</label>
-                <input type="text" id="startLat" placeholder="Enter start latitude" value="50.672555">
+    <div id="floatingPanel">
+        <div id="panel-content" class="content-active">
+            <h3>Journey Parameters</h3>
+            <form id="routeForm">
+                <!--            <div>-->
+                <!--                <label for="startLat"><i class="fas fa-map-marker-alt"></i> Start Latitude:</label>-->
+                <!--                <input type="text" id="startLat" class="form-control" placeholder="Enter start latitude"-->
+                <!--                       value="50.672555">-->
+                <!--            </div>-->
+                <!--            <div>-->
+                <!--                <label for="startLong"><i class="fas fa-map-marker-alt"></i> Start Longitude:</label>-->
+                <!--                <input type="text" id="startLong" class="form-control" placeholder="Enter start longitude"-->
+                <!--                       value="-4.240029">-->
+                <!--            </div>-->
+                <!--            <div>-->
+                <!--                <label for="endLat"><i class="fas fa-map-marker-alt"></i> End Latitude:</label>-->
+                <!--                <input type="text" id="endLat" class="form-control" placeholder="Enter end latitude" value="51.165739">-->
+                <!--            </div>-->
+                <!--            <div>-->
+                <!--                <label for="endLong"><i class="fas fa-map-marker-alt"></i> End Longitude:</label>-->
+                <!--                <input type="text" id="endLong" class="form-control" placeholder="Enter end longitude"-->
+                <!--                       value="-1.919691">-->
+                <!--            </div>-->
+
+                <!--            <div>-->
+                <!--                <label for="startLocation">Start Location:</label>-->
+                <!--                <input type="text" id="startLocation" class="form-control" placeholder="Enter start location or coordinates">-->
+                <!--                <div id="startSuggestions" class="suggestions"></div>-->
+
+                <!--            </div>-->
+                <!--            <div>-->
+                <!--                <label for="endLocation">End Location:</label>-->
+                <!--                <input type="text" id="endLocation" class="form-control" placeholder="Enter end location or coordinates">-->
+                <!--                <div id="endSuggestions" class="suggestions"></div>-->
+                <!--            </div>-->
+
+
+                <div>
+                    <label for="startLocation">Start Location:</label>
+                    <input type="text" id="startLocation" class="form-control"
+                           placeholder="Search or input lat,lng">
+                    <div id="startSuggestions" class="suggestions"></div>
+                    <input type="hidden" id="startLat">
+                    <input type="hidden" id="startLong">
+                </div>
+                <div>
+                    <label for="endLocation">End Location:</label>
+                    <input type="text" id="endLocation" class="form-control"
+                           placeholder="Search or input lat,lng">
+                    <div id="endSuggestions" class="suggestions"></div>
+                    <input type="hidden" id="endLat">
+                    <input type="hidden" id="endLong">
+                </div>
+
+                <div>
+                    <label for="selectedVehicle">Select Vehicle:</label>
+                    <select id="selectedVehicle" class="form-select">
+                        <option value="" selected>Select an option</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="evRange">EV Range (km):</label>
+                    <input type="number" id="evRange" class="form-control" value="100">
+                </div>
+                <div>
+                    <label for="batteryCapacity">Battery Capacity</label>
+                    <input type="number" id="batteryCapacity" class="form-control" value="">
+                </div>
+
+                <div class="slider-container">
+                    <label for="startingBattery">Starting Battery</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="range" id="startingBattery" class="slider" min="0" max="100" value="80">
+                        <input type="number" class="rangeValue" style="margin-left: 10px; width: 30px;" value="80">
+                        <span style="margin-left: 5px;">%</span>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <label for="minChargeLevel">Min Charge Level</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="range" id="minChargeLevel" class="slider" min="0" max="100" value="20">
+                        <input type="number" class="rangeValue" style="margin-left: 10px; width: 30px;" value="20">
+                        <span style="margin-left: 5px;">%</span>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <label for="chargeLevelAfterEachStop">Charge Level After Each Stop</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="range" id="chargeLevelAfterEachStop" class="slider" min="0" max="100" value="90">
+                        <input type="number" class="rangeValue" style="margin-left: 10px; width: 30px;" value="90">
+                        <span style="margin-left: 5px;">%</span>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <label for="finalDestinationChargeLevel">Final Destination Charge Level</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="range" id="finalDestinationChargeLevel" class="slider" min="0" max="100"
+                               value="20">
+                        <input type="number" class="rangeValue" style="margin-left: 10px; width: 30px;" value="20">
+                        <span style="margin-left: 5px;">%</span>
+                    </div>
+                </div>
+
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const sliderContainers = document.querySelectorAll('.slider-container');
+
+                        sliderContainers.forEach(container => {
+                            const slider = container.querySelector('.slider');
+                            const numericInput = container.querySelector('.rangeValue');
+
+                            slider.addEventListener('input', function () {
+                                numericInput.value = this.value;
+                            });
+
+                            numericInput.addEventListener('input', function () {
+                                slider.value = this.value;
+                            });
+                        });
+                    });
+
+                </script>
+
+
+                <div>
+                    <label for="connectionTypes">Connection Type:</label>
+                    <select id="connectionTypes" multiple>
+                        <option value="type2">Type 2</option>
+                        <option value="type1">Type 1</option>
+                        <option value="chademo">CHAdeMO</option>
+                        <option value="ccs">CCS</option>
+                        <option value="tesla">Tesla</option>
+                        <option value="domestic_3_pin">Domestic 3-Pin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="accessTypes">Access Type:</label>
+                    <select id="accessTypes" multiple>
+                        <option value="public">Public</option>
+                        <option value="restricted">Restricted</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+
+                <div class="slider-container">
+                    <label for="minKwChargeSpeed">Min Charge Speed (kW):</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="range" id="minKwChargeSpeed" class="slider" min="0" max="350" value="50" step="10">
+                        <input type="number" class="rangeValue" style="margin-left: 10px; width: 30px;" value="50">
+                        <span style="margin-left: 5px;">kW</span>
+                    </div>
+                </div>
+
+                <!--            <div>-->
+                <!--                <label for="minKwChargeSpeed">Min Charge Speed (kW):</label>-->
+                <!--                <input type="number" id="minKwChargeSpeed" value="" class="form-control">-->
+                <!--            </div>-->
+                <!--            <div>-->
+                <!--                <label for="maxKwChargeSpeed">Max Charge Speed (kW):</label>-->
+                <!--                <input type="number" id="maxKwChargeSpeed" value="" class="form-control">-->
+                <!--            </div>-->
+                <div>
+                    <label for="minNoChargePoints">Min Charge Points:</label>
+                    <input type="number" id="minNoChargePoints" value="" class="form-control">
+                </div>
+
+
+                <div class="form-check form-switch form-check-reverse">
+                    <input class="form-check-input" type="checkbox" id="stopForEating" checked>
+                    <label class="form-check-label" for="stopForEating">Stop For Eating</label>
+                </div>
+
+                <div>
+                    <label for="foodPreferences">Food Preferences:</label>
+                    <select id="foodPreferences" multiple>
+                        <option value="food_retailer">Food Retailer</option>
+                        <option value="restaurant">Restaurant</option>
+                        <option value="cafe">Cafe</option>
+                        <option value="bar">Bar</option>
+                        <option value="service_station">Service Station</option>
+                        <option value="newsagent">Newsagent</option>
+                        <option value="supermarket">Supermarket</option>
+                        <option value="pizza_restaurant">Pizza</option>
+                        <option value="fast_food">Fast Food</option>
+                        <option value="asian_restaurant">Asian</option>
+                        <option value="italian_restaurant">Italian</option>
+                        <option value="greek_restaurant">Greek</option>
+                    </select>
+                </div>
+
+                <script>
+                    $(document).ready(function () {
+                        $('.select2-enabled').select2({
+                            placeholder: "Select an option",
+                            allowClear: true,
+                            width: '100%'
+                        });
+                        $('#foodPreferences, #accessTypes, #connectionTypes').select2({
+                            placeholder: "Select options",
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    });
+                </script>
+
+
+                <div>
+                    <label for="minPrice">Min Price Range (1-4):</label>
+                    <input type="number" id="minPrice" class="form-control" value="">
+                </div>
+
+                <div>
+                    <label for="maxPrice">Max Price Range (1-4):</label>
+                    <input type="number" id="maxPrice" class="form-control" value="">
+                </div>
+
+                <div>
+                    <label for="maxWalkingDistance">Max Walking Distance (m):</label>
+                    <input type="number" id="maxWalkingDistance" class="form-control" value="">
+                </div>
+
+                <div>
+                    <label for="eatingOptionSearchDeviation">Eating Option Search Deviation:</label>
+                    <select id="eatingOptionSearchDeviation" class="form-select">
+                        <option value="" selected>Select an option</option>
+                        <option value="minimal">Minimal</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="significant">Significant</option>
+                    </select>
+                </div>
+
+                <div class="form-check form-switch form-check-reverse">
+                    <input class="form-check-input" type="checkbox" id="includeAlternativeEatingOptions" checked>
+                    <label class="form-check-label" for="stopForEating">Alternative Eating Options:</label>
+                </div>
+
+                <div>
+                    <label for="departTime">Departure Time:</label>
+                    <input type="time" id="departTime" class="form-control" value="11:00">
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var departTimeInput = document.getElementById('departTime');
+                        if (departTimeInput) {
+                            var now = new Date();
+                            var hours = String(now.getHours()).padStart(2, '0');
+                            var minutes = String(now.getMinutes()).padStart(2, '0');
+                            departTimeInput.value = `${hours}:${minutes}`;
+                        }
+                    });
+                </script>
+
+                <div>
+                    <label for="breakDuration">Break Duration:</label>
+                    <input type="time" id="breakDuration" class="form-control" value="01:00">
+                </div>
+
+                <div>
+                    <label for="stoppingRange">Ideal Stopping Point:</label>
+                    <select id="stoppingRange" class="form-select">
+                        <option value="" selected>Select an option</option>
+                        <option value="earliest">Earliest</option>
+                        <option value="early">Early</option>
+                        <option value="middle">Middle</option>
+                        <option value="later">Later</option>
+                        <option value="latest">Latest</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="submit" id="findRoute" class="btn btn-primary" style="flex: 1;">Find Route</button>
+                    <button type="button" id="resetButton" class="btn btn-secondary" style="flex: 1;">Reset Points</button>
+                </div>
+
+                <!--            <div>-->
+                <!--                <button type="button" id="openInGoogleMaps">Open in Google Maps</button>-->
+                <!--            </div>-->
+                <!--            <button id="locateButton">Locate Me</button>-->
+
+            </form>
+        </div>
+
+        <div id="results-content" class="content-hidden">
+
+            <div class="summary-header">
+                <h2 data-summary="location">{location}</h2>
+                <p data-summary="route">{start location} to {end location}</p>
+                <p data-summary="details">{distance}, {time}, {stops}</p>
             </div>
-            <div>
-                <label for="startLong">Start Longitude:</label>
-                <input type="text" id="startLong" placeholder="Enter start longitude" value="-4.240029">
+
+            <div class="start-header">
+
             </div>
-            <div>
-                <label for="endLat">End Latitude:</label>
-                <input type="text" id="endLat" placeholder="Enter end latitude" value="51.165739">
+
+            <div class="route-segments">
+                <!-- dynamically added segments go here -->
             </div>
-            <div>
-                <label for="endLong">End Longitude:</label>
-                <input type="text" id="endLong" placeholder="Enter end longitude" value="-1.919691">
+
+            <div class="end-header">
+
             </div>
 
             <div>
-                <label for="selectedVehicle">Select Vehicle:</label>
-                <select id="selectedVehicle">
-                    <option value="" selected>Select an option</option>
-                </select>
+                <button type="button" id="backToForm" class="btn btn-secondary">Search Again</button>
             </div>
-
-            <div>
-                <label for="startingBattery">Starting Battery (%):</label>
-                <input type="number" id="startingBattery" value="90">
-            </div>
-            <div>
-                <label for="evRange">EV Range (km):</label>
-                <input type="number" id="evRange" value="100">
-            </div>
-            <div>
-                <label for="batteryCapacity">Battery Capacity (kWh):</label>
-                <input type="number" id="batteryCapacity" value="">
-            </div>
-            <div>
-                <label for="minChargeLevel">Min Charge Level (%):</label>
-                <input type="number" id="minChargeLevel" value="20">
-            </div>
-            <div>
-                <label for="chargeLevelAfterEachStop">Charge Level After Each Stop (%):</label>
-                <input type="number" id="chargeLevelAfterEachStop" value="90">
-            </div>
-            <div>
-                <label for="finalDestinationChargeLevel">Final Destination Charge Level(%):</label>
-                <input type="number" id="finalDestinationChargeLevel" value="20">
-            </div>
-
-
-            <div>
-                <label for="connectionTypes">Connection Type:</label>
-                <select id="connectionTypes" multiple>
-                    <option value="type2">Type 2</option>
-                    <option value="type1">Type 1</option>
-                    <option value="chademo">CHAdeMO</option>
-                    <option value="ccs">CCS</option>
-                    <option value="tesla">Tesla</option>
-                    <option value="domestic_3_pin">Domestic 3-Pin</option>
-                </select>
-            </div>
-
-            <div>
-                <label for="accessTypes">Access Type:</label>
-                <select id="accessTypes" multiple>
-                    <option value="public">Public</option>
-                    <option value="restricted">Restricted</option>
-                    <option value="private">Private</option>
-                </select>
-            </div>
-            <div>
-                <label for="minKwChargeSpeed">Min Charge Speed (kW):</label>
-                <input type="number" id="minKwChargeSpeed" value="">
-            </div>
-
-            <div>
-                <label for="maxKwChargeSpeed">Max Charge Speed (kW):</label>
-                <input type="number" id="maxKwChargeSpeed" value="">
-            </div>
-
-            <div>
-                <label for="minNoChargePoints">Min Charge Points:</label>
-                <input type="number" id="minNoChargePoints" value="">
-            </div>
-
-            <div>
-                <label for="stopForEating">Stop For Eating:</label>
-                <input type="checkbox" id="stopForEating" checked>
-            </div>
-
-            <div>
-                <label for="foodPreferences">Food Preferences:</label>
-                <select id="foodPreferences" multiple>
-                    <option value="food_retailer">Food Retailer</option>
-                    <option value="restaurant">Restaurant</option>
-                    <option value="cafe">Cafe</option>
-                    <option value="bar">Bar</option>
-                    <option value="service_station">Service Station</option>
-                    <option value="newsagent">Newsagent</option>
-                    <option value="supermarket">Supermarket</option>
-                    <option value="pizza_restaurant">Pizza</option>
-                    <option value="fast_food">Fast Food</option>
-                    <option value="asian_restaurant">Asian</option>
-                    <option value="italian_restaurant">Italian</option>
-                    <option value="greek_restaurant">Greek</option>
-                </select>
-            </div>
-
-            <div>
-                <label for="minPrice">Min Price Range (1-4):</label>
-                <input type="number" id="minPrice" value="">
-            </div>
-
-            <div>
-                <label for="maxPrice">Max Price Range (1-4):</label>
-                <input type="number" id="maxPrice" value="">
-            </div>
-
-            <div>
-                <label for="maxWalkingDistance">Max Walking Distance (m):</label>
-                <input type="number" id="maxWalkingDistance" value="">
-            </div>
-
-            <div>
-                <label for="eatingOptionSearchDeviation">Eating Option Search Deviation:</label>
-                <select id="eatingOptionSearchDeviation">
-                    <option value="" selected>Select an option</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="moderate">Moderate</option>
-                    <option value="significant">Significant</option>
-                </select>
-            </div>
-
-
-            <div>
-                <label for="includeAlternativeEatingOptions">Include Alternative Eating Options:</label>
-                <input type="checkbox" id="includeAlternativeEatingOptions">
-            </div>
-
-            <div>
-                <label for="departTime">Departure Time:</label>
-                <input type="time" id="departTime" value="11:00">
-            </div>
-            <div>
-                <label for="breakDuration">Break Duration:</label>
-                <input type="time" id="breakDuration" value="01:00">
-            </div>
-
-            <div>
-                <label for="stoppingRange">Ideal Stopping Point:</label>
-                <select id="stoppingRange">
-                    <option value="" selected>Select an option</option>
-                    <option value="earliest">Earliest</option>
-                    <option value="early">Early</option>
-                    <option value="middle">Middle</option>
-                    <option value="later">Later</option>
-                    <option value="latest">Latest</option>
-                </select>
-            </div>
-
-            <div>
-                <button type="submit">Find Route</button>
-            </div>
-            <div>
-                <button type="button" id="resetButton">Reset Points</button>
-            </div>
-            <div>
-                <button type="button" id="openInGoogleMaps">Open in Google Maps</button>
-            </div>
-
-        </form>
+        </div>
     </div>
+    <!--    <button id="toggleButton" class="toggle-button">&#9664;</button> &lt;!&ndash; Left arrow &ndash;&gt;-->
+    <div id="toggleButton">
+        <i class="fas fa-angle-double-left"></i>
+    </div>
+
+
     <div id="map-container">
         <!--    <div id="map" style="height: 400px;"></div>-->
-        <div id="loadingOverlay">Loading...</div>
+        <div id="loadingOverlay">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
 
         <div id="map" style="height: 100%; "></div>
+        <button id="locateButton" class="leaflet-control-locate">
+            <i class="fas fa-location-arrow"></i>
+        </button>
     </div>
 </div>
 
 <script type="module" src="app.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var selectElement = document.getElementById('selectedVehicle');
         if (selectElement) {
             console.log('Select element is available:', selectElement);
@@ -207,5 +377,10 @@
         }
     });
 </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
 </body>
 </html>

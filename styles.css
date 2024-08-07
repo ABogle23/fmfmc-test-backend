@@ -1,27 +1,76 @@
-/*#map { height: 400px; width: calc(100% - 300px); float: right; }*/
-/*#sidebar { width: 300px; float: left; }*/
 
-/*#map-container {*/
-/*    width: 87%;*/
+/*#container {*/
+/*    display: flex;*/
 /*    height: 90vh;*/
-/*    float: right;*/
+/*    position: relative; !* Ensure container is positioned relatively *!*/
 /*}*/
-/*#sidebar {*/
-/*    width: 13%;*/
-/*    min-width: 180px;*/
-/*    float: left;*/
-/*    height: 90vh;*/
-/*    overflow-y: auto;*/
-/*}*/
-#container {
-    display: flex;
-    height: 90vh;
-    position: relative; /* Ensure container is positioned relatively */
 
+html, body {
+    height: 100%; /* ensures the whole page is exactly the height of the viewport */
+    margin: 0; /* removes default margin */
+    overflow: hidden; /* prevents scrolling on the whole page */
 }
 
+#container {
+    display: flex;
+    flex-direction: column; /* stacks the sidebar and map vertically */
+    height: 100vh; /* sets container height to viewport height */
+    overflow: hidden; /* prevents scrolling within container */
+}
+
+#floatingPanel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 300px;
+    z-index: 1000;
+    transition: left 0.3s;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+#map-container {
+    flex-grow: 1;
+    height: 100%; /* takes up remaining space */
+}
+
+/* Media query for small screens */
+/*@media (max-width: 600px) {*/
+/*    #floatingPanel {*/
+/*        top: auto; !* Align to the bottom on small screens *!*/
+/*        bottom: 10px; !* Distance from bottom *!*/
+/*        left: 50%; !* Center horizontally *!*/
+/*        transform: translateX(-50%); !* Adjust horizontal position to truly center *!*/
+/*    }*/
+/*}*/
+
+#toggleButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 35px;
+    left: 305px; /* align with the edge of panel */
+    width: 30px;
+    height: 60px;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 20%;
+    font-size: 16px;
+    cursor: pointer;
+    transition: left 0.3s;
+    z-index: 1500;
+}
+
+
+
 #sidebar {
-    flex: 1;
+    flex: 1.5;
     min-width: 220px;
     overflow-y: auto;
 }
@@ -29,6 +78,27 @@
 #map-container {
     flex: 6;
     height: 100%;
+}
+.leaflet-control-locate {
+    position: absolute;
+    bottom: 100px;
+    right: 11px;
+    background-color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 1200; /* ensures its above the map */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.leaflet-control-locate i {
+    font-size: 18px;
 }
 .custom-div-icon {
     position: relative;
@@ -46,30 +116,172 @@ label {
 }
 
 #routeForm div {
-    margin-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
-#routeForm input, #routeForm select {
-    width: 150px;
-    box-sizing: border-box;
-}
+/*#routeForm input, #routeForm select {*/
+/*    width: 150px;*/
+/*    box-sizing: border-box;*/
+/*}*/
 
 #loadingOverlay {
-    position: fixed;  /* Change from absolute to fixed to cover the whole screen */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-    z-index: 1000;  /* Make sure it's above everything */
-    display: none;  /* Initially hidden */
+    background: rgba(0, 0, 0, 0.5); /* transparent black background */
+    z-index: 2000;
+    display: none;  /* initially hidden */
     justify-content: center;
     align-items: center;
     font-size: 20px;
-    color: #FFF; /* White color for the loading text */
+    color: #FFF;
 }
 
 #sidebar.blurred {
-    backdrop-filter: blur(8px); /* Apply blur effect when class 'blurred' is added */
+    backdrop-filter: blur(8px);
+}
+
+.rangeValue {
+    font-weight: bold;
+    margin-left: 10px; /* space between the slider and value */
+}
+
+.rangeValue {
+    border: none;
+    background: transparent;
+    outline: none;
+    color: #333;
+    font-family: Arial, sans-serif;
+    text-align: right;
+    width: 45px; /* fixed width to prevent layout shift */
+}
+
+.rangeValue:focus {
+    background: white;
+    border: 1px solid #333; /* add border when focused */
+}
+
+/* Chrome, Safari, newer versions of Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+.form-check-input {
+    cursor: pointer; /* ensures the cursor appears clickable */
+}
+
+.form-check-input {
+    width: 34px;
+    height: 20px;
+}
+
+
+/* mapbox geocoding */
+
+.suggestions {
+    position: absolute;
+    background: white;
+    width: calc(100% - 50px);
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-size: 14px;
+    display: none; /* Hidden by default */
+}
+
+.suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background-color: #f0f0f0;
+}
+
+
+/* for switching between panelcontent */
+
+.content-hidden {
+    display: none;
+}
+
+.content-active {
+    display: block;
+}
+
+
+/*.route-stop {*/
+/*    border: 1px solid #ccc;*/
+/*    margin: 10px;*/
+/*    padding: 10px;*/
+/*    background-color: #f9f9f9;*/
+/*}*/
+
+.summary-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+.summary-header p {
+    margin: 0;
+    color: #4d4d4d;
+    font-size: 16px;
+}
+.summary-header {
+    margin-bottom: 13px;
+}
+
+.route-segments .segment {
+    background: #d8ecfd;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+}
+.route-segments .segment p {
+    margin: 0;
+    color: #4d4d4d;
+    font-size: 15px;
+}
+
+.segment i, .food-segment i, .end-header i, .start-header i{
+    width: 20px; /* fixed width for all icons */
+    display: inline-block;
+    text-align: center;
+}
+.segment h6, .segment p, .food-segment h6, .food-segment p, .end-header h6, .end-header p, .start-header h6, .start-header p {
+    margin-left: 5px;
+}
+
+/* for time in right corner */
+.segment h6 .time, .start-header h6 .time, .end-header h6 .time {
+    float: right;
+}
+
+
+.food-segment {
+    background-color: #c8e6c9; /* light green background for food segment */
+    padding: 8px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border-left: 5px solid #388e3c; /* dark green left border */
+}
+
+.end-header, .start-header {
+    background: #f2f8ff;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+}
+.end-header p, .start-header p {
+    margin: 0;
+    color: #4d4d4d;
+    font-size: 15px;
 }
 
