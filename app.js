@@ -718,7 +718,8 @@ document.getElementById('toggleButton').addEventListener('click', function() {
 
 // Mapbox geocoding api
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiZWF3MjMiLCJhIjoiY2x5eWRneW03MWN6NTJqczBrb3M0MjlvaiJ9.jgX9HXM73sNJqTUcEqJfSg';
+import { MAPBOX_API_KEY } from './secrets.js';
+mapboxgl.accessToken = MAPBOX_API_KEY;
 
 window.selectPlace = function(place, coordinates, inputId) {
     console.log(place, " + ", inputId);
