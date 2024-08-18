@@ -173,6 +173,20 @@ function fetchRoute() {
         body: JSON.stringify(requestBody)
     }).then(response => response.json())
         .then(data => {
+
+            if (!data.hasOwnProperty('success')) {
+                console.log(data);
+                const errorMessage = `${data.message}`;
+                const errorDetails = `${data.details.join(', ')}`;
+                document.getElementById('loadingOverlay').style.display = 'none';
+                displayError(errorMessage, errorDetails);
+                return;
+            }
+
+            if (data.hasOwnProperty('fallback_used') && data.fallback_used) {
+                displayFallbackInfo('Fallback strategies applied', data.fallback_details);
+            }
+
             const dataSizeBytes = new TextEncoder().encode(JSON.stringify(data)).length;
             const dataSizeKb = dataSizeBytes / 1024;
             console.log(`Response size: ${dataSizeKb.toFixed(2)} KB`);
@@ -185,8 +199,79 @@ function fetchRoute() {
         document.getElementById('loadingOverlay').style.display = 'none';
         // document.getElementById('sidebar').classList.remove('blurred');
         alert('An error occurred while fetching the route');
+        displayError(errorMessage, errorDetails);
+
     });
 }
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const errorContainer = document.getElementById('error-container');
+    const closeBtn = errorContainer.querySelector('.close-btn');
+
+    function showError(message) {
+        document.getElementById('error-message').textContent = message;
+        errorContainer.style.display = 'block';
+    }
+
+    closeBtn.addEventListener('click', function() {
+        errorContainer.style.display = 'none';
+    });
+
+});
+
+function displayError(message, details) {
+    const errorContainer = document.getElementById('error-container');
+    const errorMessage = document.getElementById('error-message');
+    const errorDetails = document.getElementById('error-details');
+
+    errorMessage.textContent = message;
+
+    errorDetails.innerHTML = '';
+    const detailsSplit = details.split(',');
+    const detailsList = document.createElement('ul');
+    detailsSplit.forEach(msg => {
+        const listItem = document.createElement('li');
+        listItem.textContent = msg.trim();
+        detailsList.appendChild(listItem);
+    });
+
+    errorDetails.appendChild(detailsList);
+    errorContainer.style.display = 'block';
+
+    // setTimeout(() => {
+    //     errorContainer.style.display = 'none';
+    // }, 10000); // Hide after 5 seconds
+}
+
+
+function displayFallbackInfo(message, details) {
+    const infoContainer = document.getElementById('info-container');
+    const infoMessage = document.getElementById('info-message');
+    const infoDetails = document.getElementById('info-details');
+
+    infoMessage.innerHTML = '';
+    infoDetails.innerHTML = '';
+
+    const detailsSplit = details.split(': ').slice(1).join(': ').split(',');
+    const detailsList = document.createElement('ul');
+    detailsSplit.forEach(msg => {
+        const listItem = document.createElement('li');
+        listItem.textContent = msg.trim();
+        detailsList.appendChild(listItem);
+    });
+
+    infoMessage.textContent = message;
+    infoDetails.appendChild(detailsList);
+
+    infoContainer.style.display = 'block';
+}
+
+document.querySelector('#info-container .close-btn').addEventListener('click', function() {
+    document.getElementById('info-container').style.display = 'none';
+});
+
+
 
 function displayRoute(data) {
     // clear existing map layers
@@ -291,7 +376,7 @@ function displayRoute(data) {
     ]);
 
     displayResults(data);
-
+    showResultsPanel()
 }
 
 
@@ -425,10 +510,12 @@ function displayResults(data) {
         var arrivalTime = data.segment_details.arrival_times[index];
 
         const segmentElement = document.createElement('div');
+        const charger = data.chargers[index];
 
         segmentElement.className = 'segment';
         segmentElement.innerHTML = `
             <h6><i class="fas fa-map-marker-alt"></i> Stop ${index + 1}<span class="time">${formatTime(arrivalTime)}</span></h6>
+            <p style="padding-bottom: 5px;"><i class="fa fa-plug"></i><b>${charger.title}</b></p>            
             <p><i class="fas fa-hourglass-half"></i> Duration: ${formatSecondsToTime(duration)}</p>
             <p><i class="fas fa-road"></i> Distance: ${formatMetersToKm(distance)}</p>
             <p><i class="fa fa-battery-three-quarters"></i> Charging: ${chargeAtArrival}% \u2192 ${chargeAtDeparture}% (${formatSecondsToTime(stopDuration)}, <i class="fa fa-bolt"></i>${chargePower} kW)</p>
@@ -569,7 +656,7 @@ var endIcon = L.divIcon({
 
 // custom icon for first i.e. optimal food establishment
 var firstFoodIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
@@ -858,12 +945,20 @@ function throttle(func, limit) {
 
 
 // for switching between form and results content
-document.getElementById('findRoute').addEventListener('click', function() {
+
+function showResultsPanel() {
     document.getElementById('panel-content').classList.add('content-hidden');
     document.getElementById('panel-content').classList.remove('content-active');
     document.getElementById('results-content').classList.add('content-active');
     document.getElementById('results-content').classList.remove('content-hidden');
-});
+}
+
+// document.getElementById('findRoute').addEventListener('click', function() {
+//     document.getElementById('panel-content').classList.add('content-hidden');
+//     document.getElementById('panel-content').classList.remove('content-active');
+//     document.getElementById('results-content').classList.add('content-active');
+//     document.getElementById('results-content').classList.remove('content-hidden');
+// });
 
 document.getElementById('backToForm').addEventListener('click', function() {
     document.getElementById('panel-content').classList.remove('content-hidden');

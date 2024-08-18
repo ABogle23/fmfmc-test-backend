@@ -71,18 +71,18 @@
                 <div>
                     <label for="startLocation">Start Location:</label>
                     <input type="text" id="startLocation" class="form-control"
-                           placeholder="Search or input lat,lng">
+                           placeholder="Search or input lat,lng" name="startLocation" required>
                     <div id="startSuggestions" class="suggestions"></div>
-                    <input type="hidden" id="startLat">
-                    <input type="hidden" id="startLong">
+                    <input type="hidden" id="startLat" name="startLat">
+                    <input type="hidden" id="startLong" name="startLong">
                 </div>
                 <div>
                     <label for="endLocation">End Location:</label>
                     <input type="text" id="endLocation" class="form-control"
-                           placeholder="Search or input lat,lng">
+                           placeholder="Search or input lat,lng" name="endLocation" required>
                     <div id="endSuggestions" class="suggestions"></div>
-                    <input type="hidden" id="endLat">
-                    <input type="hidden" id="endLong">
+                    <input type="hidden" id="endLat" name="endLat">
+                    <input type="hidden" id="endLong" name="endLong">
                 </div>
 
                 <div>
@@ -353,7 +353,10 @@
 
     <div id="map-container">
         <!--    <div id="map" style="height: 400px;"></div>-->
-        <div id="loadingOverlay">
+
+
+
+       <div id="loadingOverlay">
             <div class="spinner-border text-light" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
@@ -363,8 +366,37 @@
         <button id="locateButton" class="leaflet-control-locate">
             <i class="fas fa-location-arrow"></i>
         </button>
+
+        <div id="error-container">
+            <div class="error-header">
+                <span class="error-icon">&#9888;</span> <!-- Unicode for warning symbol -->
+                <span>Error:</span>
+                <span id="error-message"></span>
+
+            </div>
+            <span id="error-details"></span>
+            <span class="close-btn">&times;</span>
+        </div>
+
+        <div id="info-container">
+            <div class="info-header">
+                <span class="info-icon">&#9432;</span> <!-- Unicode for information symbol -->
+                <span>Info: </span>
+                <span id="info-message"></span>
+            </div>
+            <span id="info-details"></span>
+            <span class="close-btn">&times;</span>
+        </div>
+
     </div>
+
+
+
 </div>
+
+
+
+
 
 <script type="module" src="app.js"></script>
 <script>
