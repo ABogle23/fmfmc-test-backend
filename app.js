@@ -3,10 +3,6 @@
 var map = L.map('map', {
     center: [55.3781, -3.4360], // center of the map (approximate center of UK)
     zoom: 6, // initial zoom level
-    maxBounds: [ // restricts the map view to the UK
-        [49.0, -10.5], // SE corner of the bounds
-        [61.0, 2.0]  // NE corner of the bounds
-    ],
     minZoom: 5,
     maxZoom: 16
 });
@@ -17,17 +13,18 @@ L.control.zoom({
     position: 'bottomright' // Change this to the desired position
 }).addTo(map);
 
-import { FMFMC_API_KEY } from './secrets.js';
+import {FMFMC_API_KEY} from './keys.js';
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
 }).addTo(map);
 
-
+// handles form submission including mapbox geocoding
 document.getElementById('routeForm').onsubmit = function (event) {
     event.preventDefault();
     console.log(event);
 
+    // if start and end locations are populated but not set by selecting autocomplete option, perform geocoding anyway
     if (firstSuggestionStart) {
         const [long, lat] = firstSuggestionStart.center;
         console.log(firstSuggestionStart.place_name)
@@ -42,7 +39,8 @@ document.getElementById('routeForm').onsubmit = function (event) {
     fetchRoute();
 };
 
-document.addEventListener('DOMContentLoaded', function() {
+// call fetchVehicles() when the page loads
+document.addEventListener('DOMContentLoaded', function () {
     fetchVehicles();
     console.log('Page fully loaded and script running');
 });
@@ -54,7 +52,8 @@ function fetchVehicles() {
         headers: {
             // 'Content-Type': 'application/json',
             'X-API-Key': FMFMC_API_KEY
-        }})
+        }
+    })
         .then(response => response.json())
         .then(data => {
             const dataSizeBytes = new TextEncoder().encode(JSON.stringify(data)).length;
@@ -72,6 +71,7 @@ function fetchVehicles() {
                 return 0;
             });
 
+            // populate vehicle dropdown
             const vehicleDropdown = document.getElementById('selectedVehicle');
             data.forEach(vehicle => {
                 const option = new Option(`${vehicle.brand} ${vehicle.model} (${vehicle.battery_capacity} kWh)`, vehicle.id);
@@ -84,7 +84,7 @@ function fetchVehicles() {
 }
 
 // add event listener to selectedVehicle dropdown to update evRange and batteryCapacity fields
-document.getElementById('selectedVehicle').addEventListener('change', function() {
+document.getElementById('selectedVehicle').addEventListener('change', function () {
     const selectedOption = this.options[this.selectedIndex];
     const evRange = Math.round(parseFloat(selectedOption.getAttribute('data-ev-range')));
     const batteryCapacity = selectedOption.getAttribute('data-battery-capacity');
@@ -93,20 +93,18 @@ document.getElementById('selectedVehicle').addEventListener('change', function()
 });
 
 
-
-
 // fetch and display route from backend
 function fetchRoute() {
     const start_lat = document.getElementById('startLat').value;
     const start_long = document.getElementById('startLong').value;
     const end_lat = document.getElementById('endLat').value;
     const end_long = document.getElementById('endLong').value;
-    const starting_battery = document.getElementById('startingBattery').value/100;
-    const ev_range = document.getElementById('evRange').value*1000;
+    const starting_battery = document.getElementById('startingBattery').value / 100;
+    const ev_range = document.getElementById('evRange').value * 1000;
     const battery_capacity = document.getElementById('batteryCapacity').value;
-    const min_charge_level = document.getElementById('minChargeLevel').value/100;
-    const charge_level_after_each_stop = document.getElementById('chargeLevelAfterEachStop').value/100;
-    const final_destination_charge_level = document.getElementById('finalDestinationChargeLevel').value/100;
+    const min_charge_level = document.getElementById('minChargeLevel').value / 100;
+    const charge_level_after_each_stop = document.getElementById('chargeLevelAfterEachStop').value / 100;
+    const final_destination_charge_level = document.getElementById('finalDestinationChargeLevel').value / 100;
     const depart_time = document.getElementById('departTime').value;
     const stopping_range = document.getElementById('stoppingRange').value;
     const break_duration = document.getElementById('breakDuration').value;
@@ -124,9 +122,8 @@ function fetchRoute() {
     const electric_vehicle_id = document.getElementById('selectedVehicle').value;
     const stop_for_eating = document.getElementById('stopForEating').checked;
 
-
+    // after submit blur screen and show spinner until response
     document.getElementById('loadingOverlay').style.display = 'flex';
-    // document.getElementById('sidebar').classList.add('blurred');
 
     const requestBody = {
         start_lat,
@@ -159,8 +156,7 @@ function fetchRoute() {
 
     console.log(requestBody);
 
-    console.log(`Start Lat: ${start_lat}, Start Long: ${start_long}, End Lat: ${end_lat}, End Long: ${end_long}, Starting Battery: ${starting_battery}, EV Range: ${ev_range}, Min Charge Level: ${min_charge_level}, Connection Types: ${connection_types},Food Preferences: ${eating_options}, Depart Time: ${depart_time}, Break Duration: ${break_duration}`);
-
+    // console.log(`Start Lat: ${start_lat}, Start Long: ${start_long}, End Lat: ${end_lat}, End Long: ${end_long}, Starting Battery: ${starting_battery}, EV Range: ${ev_range}, Min Charge Level: ${min_charge_level}, Connection Types: ${connection_types},Food Preferences: ${eating_options}, Depart Time: ${depart_time}, Break Duration: ${break_duration}`);
 
     // call to backend
     fetch('http://localhost:8080/api/find-journey', {
@@ -174,6 +170,7 @@ function fetchRoute() {
     }).then(response => response.json())
         .then(data => {
 
+            // display journey finding error msg details if any
             if (!data.hasOwnProperty('success')) {
                 console.log(data);
                 const errorMessage = `${data.message}`;
@@ -183,6 +180,7 @@ function fetchRoute() {
                 return;
             }
 
+            // display fallback msgs if any
             if (data.hasOwnProperty('fallback_used') && data.fallback_used) {
                 displayFallbackInfo('Fallback strategies applied', data.fallback_details);
             }
@@ -199,22 +197,22 @@ function fetchRoute() {
         document.getElementById('loadingOverlay').style.display = 'none';
         // document.getElementById('sidebar').classList.remove('blurred');
         alert('An error occurred while fetching the route');
-        displayError(errorMessage, errorDetails);
-
+        // displayError(error, 'An error occurred while fetching the route');
     });
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
+// event listener for closing error msg
+document.addEventListener('DOMContentLoaded', function () {
     const errorContainer = document.getElementById('error-container');
     const closeBtn = errorContainer.querySelector('.close-btn');
 
-    function showError(message) {
-        document.getElementById('error-message').textContent = message;
-        errorContainer.style.display = 'block';
-    }
+    // function showError(message) {
+    //     document.getElementById('error-message').textContent = message;
+    //     errorContainer.style.display = 'block';
+    // }
 
-    closeBtn.addEventListener('click', function() {
+    closeBtn.addEventListener('click', function () {
         errorContainer.style.display = 'none';
     });
 
@@ -239,9 +237,6 @@ function displayError(message, details) {
     errorDetails.appendChild(detailsList);
     errorContainer.style.display = 'block';
 
-    // setTimeout(() => {
-    //     errorContainer.style.display = 'none';
-    // }, 10000); // Hide after 5 seconds
 }
 
 
@@ -267,12 +262,13 @@ function displayFallbackInfo(message, details) {
     infoContainer.style.display = 'block';
 }
 
-document.querySelector('#info-container .close-btn').addEventListener('click', function() {
+// event listener for closing fallback msg
+document.querySelector('#info-container .close-btn').addEventListener('click', function () {
     document.getElementById('info-container').style.display = 'none';
 });
 
 
-
+// populates journey data onto results panel and map
 function displayRoute(data) {
     // clear existing map layers
     map.eachLayer(function (layer) {
@@ -330,7 +326,7 @@ function displayRoute(data) {
         });
     }
 
-    // add markers for chargers from backend response
+    // add markers for chargers
     data.chargers.forEach(charger => {
         if (charger.geocodes) {
             const content = getAllMarkerContent(charger);
@@ -343,6 +339,7 @@ function displayRoute(data) {
         }
     });
 
+    // add markers for food establishments, the first i.e. optimal fe uses firstFoodIcon style
     let isFirstMarker = true;
     data.food_establishments.forEach(establishment => {
         if (establishment.geocodes) {
@@ -365,12 +362,15 @@ function displayRoute(data) {
         [data.context.end_lat, data.context.end_long]
     ]);
 
+    // display journey details
     displayResults(data);
+
+    // switch to results panel
     showResultsPanel()
 }
 
 
-// show all content for eatingOption/charger markers
+// show all content for food establishment/charger markers w/ indentation
 function getAllMarkerContent(dataObject, level = 0) {
     let content = '<div class="popup-content" style="margin-left: ' + (level * 10) + 'px;">';
     for (const [key, value] of Object.entries(dataObject)) {
@@ -392,7 +392,7 @@ function getAllMarkerContent(dataObject, level = 0) {
 }
 
 // function to decode polyline returned from backend
-// code from https://github.com/mapbox/polyline/blob/master/src/polyline.js
+// code taken from https://github.com/mapbox/polyline/blob/master/src/polyline.js
 function decodePolyline(str) {
     const precision = 5;
 
@@ -451,6 +451,7 @@ function displayResults(data) {
 
     const latLongRegex = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
 
+    // populate journey summary
     var startLoc = document.getElementById('startLocation').value;
     startLoc = latLongRegex.test(startLoc) ? startLoc : startLoc.split(',')[0];
     var endLoc = document.getElementById('endLocation').value;
@@ -460,6 +461,7 @@ function displayResults(data) {
     const stopsCount = `${(data.segment_details.stop_durations.length)} stops`;
     populateSummary(startLoc, endLoc, totalDistance, totalTime, stopsCount)
 
+    // populate start and end containers
     const startBattery = `${((data.segment_details.departing_charges[0] * 100).toFixed(1))}%`;
     const initialDepartTime = data.segment_details.depart_times[0];
     console.log(initialDepartTime)
@@ -470,12 +472,13 @@ function displayResults(data) {
     const finalArrivalTime = data.segment_details.arrival_times[data.segment_details.arrival_times.length - 1];
     populateEnd(endLoc, endBattery, endSegmentDistance, finalArrivalTime)
 
-    // stops
+    // populate stops
     const resultsContainer = document.querySelector('.route-segments');
     resultsContainer.innerHTML = ''; // clear previous results
 
     data.segment_details.segment_durations.forEach((duration, index) => {
 
+        // check for stops
         if (index === data.segment_details.segment_durations.length - 1) {
             return;
         }
@@ -503,6 +506,7 @@ function displayResults(data) {
             <p><i class="fa fa-battery-three-quarters"></i> Charging: ${chargeAtArrival}% \u2192 ${chargeAtDeparture}% (${formatSecondsToTime(stopDuration)}, <i class="fa fa-bolt"></i>${chargePower} kW)</p>
         `;
 
+        // check if food establishment is adjacent to charger, if so add it
         if ((data.food_establishments.length > 0) && (data.chargers[index].id === data.food_establishments[0].adjacent_charger_id)) {
             console.log('food establishment found');
 
@@ -528,10 +532,12 @@ function displayResults(data) {
 
 }
 
+// helper formatting functions
 function formatMetersToKm(meters) {
     const kilometers = meters / 1000;
     return `${kilometers.toFixed(2)} km`;
 }
+
 function formatSecondsToTime(seconds) {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -540,10 +546,12 @@ function formatSecondsToTime(seconds) {
     }
     return `${hours} hrs ${minutes} min`;
 }
+
 function formatTime(timeStr) {
     const [hours, minutes] = timeStr.split(':');
     return `${hours}:${minutes}`;
 }
+
 function convertPriceToSymbols(price) {
     if (price === null) {
         return '';
@@ -561,9 +569,6 @@ function populateSummary(startLocation, endLocation, distance, time, stops) {
 }
 
 function populateStart(startLocation, battery, initialDepartTime) {
-    // document.querySelector('.start-header [data-summary="time"]').textContent = `Start: ${formatTime(initialDepartTime)}`;
-    // document.querySelector('.start-header [data-summary="location"]').textContent = startLocation;
-    // document.querySelector('.start-header [data-summary="details"]').textContent = `${battery}`;
     const resultsContainer = document.querySelector('.start-header');
     resultsContainer.innerHTML = '';
     resultsContainer.innerHTML = `
@@ -572,11 +577,8 @@ function populateStart(startLocation, battery, initialDepartTime) {
             <p><i class="fas fa-battery-half"></i> ${battery}</p>
         `;
 }
+
 function populateEnd(endLocation, battery, distance, finalArrivalTime) {
-    // document.querySelector('.end-header [data-summary="time"]').textContent = `Finish: ${formatTime(finalArrivalTime)}`;
-    // document.querySelector('.end-header [data-summary="location"]').textContent = endLocation;
-    // document.querySelector('.end-header [data-summary="details"]').textContent = `${battery}`;
-    // document.querySelector('.end-header [data-summary="distance"]').textContent = `${distance}`;
     const resultsContainer = document.querySelector('.end-header');
     resultsContainer.innerHTML = '';
     resultsContainer.innerHTML = `
@@ -587,7 +589,7 @@ function populateEnd(endLocation, battery, distance, finalArrivalTime) {
         `;
 }
 
-// custom icon for location
+// custom icon for location button
 var locationIcon = L.divIcon({
     className: 'custom-div-icon',
     html: "<div style='background-color:blue; border: 2px solid white; border-radius: 50%; width: 15px; height: 15px; box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);'></div>",
@@ -611,7 +613,7 @@ var endIcon = L.divIcon({
     iconAnchor: [10, 10]
 });
 
-// custom icon for first i.e. optimal food establishment
+// green icon for first i.e. optimal food establishment
 var firstFoodIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -621,7 +623,7 @@ var firstFoodIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-// custom icon for subsequent food establishments
+// orange icon for subsequent food establishments
 var subsequentFoodIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -653,6 +655,7 @@ map.on('click', function (e) {
         document.getElementById('startLocation').value = e.latlng.lat.toFixed(6) + ',' + e.latlng.lng.toFixed(6);
         settingStart = false; // next click will set the end point
 
+        // create/move startMarker
         if (!startMarker) {
             startMarker = L.marker(e.latlng, {icon: startIcon}).addTo(map).bindPopup('Start Location');
         } else {
@@ -663,8 +666,9 @@ map.on('click', function (e) {
         document.getElementById('endLat').value = e.latlng.lat.toFixed(6);
         document.getElementById('endLong').value = e.latlng.lng.toFixed(6);
         document.getElementById('endLocation').value = e.latlng.lat.toFixed(6) + ',' + e.latlng.lng.toFixed(6);
-        settingStart = true; // Reset to start point for the next set of clicks
+        settingStart = true; // now that start and end are set: reset settingStart to true for neck click
 
+        // Create/move endMarker
         if (!endMarker) {
             endMarker = L.marker(e.latlng, {icon: endIcon}).addTo(map).bindPopup('End Location');
         } else {
@@ -672,7 +676,6 @@ map.on('click', function (e) {
         }
     }
 });
-
 
 
 // resetting coordinates on the map/form only
@@ -714,14 +717,14 @@ function resetForm() {
 
 }
 
-// event listener for 'resetButton' elem that calls the resetPoints() function when clicked
+// event listener for resetButton btn that calls the resetForm() function when clicked
 document.getElementById('resetButton').addEventListener('click', resetForm);
 
 
-// event listener for 'locateButton' elem that gets the user's location and sets the map view to that location
-document.getElementById('locateButton').addEventListener('click', function() {
+// event listener for locateButton btn that gets the user's location and sets the map view to that location
+document.getElementById('locateButton').addEventListener('click', function () {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
+        navigator.geolocation.getCurrentPosition(function (position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
@@ -730,7 +733,7 @@ document.getElementById('locateButton').addEventListener('click', function() {
 
             // add a marker at the user location
             L.marker([lat, lng], {icon: locationIcon}).addTo(map);
-        }, function(error) {
+        }, function (error) {
             console.error('Error getting location:', error);
             alert('Unable to retrieve your location');
         });
@@ -739,7 +742,8 @@ document.getElementById('locateButton').addEventListener('click', function() {
     }
 });
 
-document.getElementById('toggleButton').addEventListener('click', function() {
+// event listener for toggleButton btn that hides/shows the sidebar
+document.getElementById('toggleButton').addEventListener('click', function () {
     var panel = document.getElementById('floatingPanel');
     var button = document.getElementById('toggleButton');
     var icon = this.querySelector('i');
@@ -759,10 +763,12 @@ document.getElementById('toggleButton').addEventListener('click', function() {
 
 // Mapbox geocoding api
 
-import { MAPBOX_API_KEY } from './secrets.js';
+import {MAPBOX_API_KEY} from './keys.js';
+
 mapboxgl.accessToken = MAPBOX_API_KEY;
 
-window.selectPlace = function(place, coordinates, inputId) {
+// updates start/end location input fields with place name and lat/long hidden fields with coordinates
+window.selectPlace = function (place, coordinates, inputId) {
     console.log(place, " + ", inputId);
     var input = document.getElementById(inputId);
     input.value = place;
@@ -778,15 +784,16 @@ window.selectPlace = function(place, coordinates, inputId) {
     }
 }
 
-window.getCurrentLocation = function(inputId) {
+// get user's current location and set it as the start/end location
+window.getCurrentLocation = function (inputId) {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
+        navigator.geolocation.getCurrentPosition(function (position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             // const place = `Current Location (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
             const place = `Your Location`;
             selectPlace(place, [lng, lat], inputId);
-        }, function(error) {
+        }, function (error) {
             console.error('Error getting location:', error);
             alert('Unable to retrieve your location');
         });
@@ -799,12 +806,14 @@ window.getCurrentLocation = function(inputId) {
 let firstSuggestionStart = null;
 let firstSuggestionEnd = null;
 
-function setupAutocomplete(inputId, suggestionsId) {
+// autocomplete and geocoding using mapbox api
+function autocompleteLocation(inputId, suggestionsId) {
     var input = document.getElementById(inputId);
     var suggestions = document.getElementById(suggestionsId);
 
-    input.addEventListener('input', throttle(function() {
+    input.addEventListener('input', throttle(function () {
 
+        // selecting 'Your Location' calls getCurrentLocation() function
         const currentLocationSuggestion = `<div onclick="getCurrentLocation('${inputId}')">Your Location</div>`;
 
         // prevent calls to mapbox if lat/long coordinates are manually entered
@@ -824,13 +833,15 @@ function setupAutocomplete(inputId, suggestionsId) {
             return;
         }
 
+        // min chars before making a request to mapbox
         if (input.value.length < 5) {
             // suggestions.style.display = 'none';
             suggestions.innerHTML = currentLocationSuggestion;
             suggestions.style.display = 'block';
-            return; // min chars before making a request to mapbox
+            return;
         }
 
+        // call to mapbox api
         var url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(input.value)}.json?access_token=${mapboxgl.accessToken}&autocomplete=true&limit=4&country=GB`;
         console.log(url)
         fetch(url)
@@ -839,19 +850,24 @@ function setupAutocomplete(inputId, suggestionsId) {
                 console.log(data);
                 // const currentLocationSuggestion = `<div onclick="getCurrentLocation('${inputId}')">Your Location</div>`;
                 if (data.features.length) {
+                    // extract place name from mapbox response
                     const place = data.features.map(feature => feature.place_name).join(', ');
                     console.log(place);
 
+                    // sets start/end suggestion to first mapbox suggestion if user doesn't select an autocomplete suggestion
                     if (inputId === 'startLocation') {
                         firstSuggestionStart = data.features[0];
+                        console.log(firstSuggestionStart);
                     } else if (inputId === 'endLocation') {
                         firstSuggestionEnd = data.features[0];
                     }
 
+                    // populate search suggestions
                     suggestions.innerHTML = currentLocationSuggestion + data.features.map(feature => `<div onclick="selectPlace('${feature.place_name}', [${feature.center[0]}, ${feature.center[1]}], '${inputId}')">${feature.place_name}</div>`).join('');
                     suggestions.style.display = 'block';
                 } else {
 
+                    // if no results found populate with your location suggestion and 'No results found'
                     suggestions.innerHTML = currentLocationSuggestion + '<div>No results found</div>';
                     suggestions.style.display = 'block';
                 }
@@ -861,22 +877,27 @@ function setupAutocomplete(inputId, suggestionsId) {
                 suggestions.innerHTML = '<div>Error loading results</div>';
                 suggestions.style.display = 'block';
             });
-    }, 2000)); // throttle mapbox requests
+    }, 1000)); // throttle mapbox requests
 
-    input.addEventListener('blur', function() {
+    // hide suggestions when input field loses focus with enough time to process suggestion
+    input.addEventListener('blur', function () {
         setTimeout(() => {
             suggestions.style.display = 'none';
-        }, 200); // delay to allow click event to fire on suggestions
+        }, 200);
     });
 }
 
-setupAutocomplete('startLocation', 'startSuggestions');
-setupAutocomplete('endLocation', 'endSuggestions');
+// typing in start/end location input fields triggers autocomplete and geocoding
+document.addEventListener('DOMContentLoaded', function () {
+    autocompleteLocation('startLocation', 'startSuggestions');
+    autocompleteLocation('endLocation', 'endSuggestions');
+});
 
+// throttles requests to mapbox api
 function throttle(func, limit) {
     let lastFunc;
     let lastRan;
-    return function() {
+    return function () {
         const context = this;
         const args = arguments;
         if (!lastRan) {
@@ -884,7 +905,7 @@ function throttle(func, limit) {
             lastRan = Date.now();
         } else {
             clearTimeout(lastFunc);
-            lastFunc = setTimeout(function() {
+            lastFunc = setTimeout(function () {
                 if ((Date.now() - lastRan) >= limit) {
                     func.apply(context, args);
                     lastRan = Date.now();
@@ -895,8 +916,7 @@ function throttle(func, limit) {
 }
 
 
-// for switching between form and results content
-
+// switches sidebar between form and results content
 function showResultsPanel() {
     document.getElementById('panel-content').classList.add('content-hidden');
     document.getElementById('panel-content').classList.remove('content-active');
@@ -904,14 +924,7 @@ function showResultsPanel() {
     document.getElementById('results-content').classList.remove('content-hidden');
 }
 
-// document.getElementById('findRoute').addEventListener('click', function() {
-//     document.getElementById('panel-content').classList.add('content-hidden');
-//     document.getElementById('panel-content').classList.remove('content-active');
-//     document.getElementById('results-content').classList.add('content-active');
-//     document.getElementById('results-content').classList.remove('content-hidden');
-// });
-
-document.getElementById('backToForm').addEventListener('click', function() {
+document.getElementById('backToForm').addEventListener('click', function () {
     document.getElementById('panel-content').classList.remove('content-hidden');
     document.getElementById('panel-content').classList.add('content-active');
     document.getElementById('results-content').classList.remove('content-active');
