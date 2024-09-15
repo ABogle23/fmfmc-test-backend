@@ -163,7 +163,7 @@ function fetchRoute() {
 
 
     // call to backend
-    fetch('http://localhost:8080/api/find-route', {
+    fetch('http://localhost:8080/api/find-journey', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -298,6 +298,7 @@ function displayRoute(data) {
         opacity: 0.7
     }).addTo(map);
 
+    // overall search area for chargers
     if (data.charger_polygon) {
         var polygonPoints = decodePolyline(data.charger_polygon);
         var polygon = L.polygon(polygonPoints, {
@@ -307,7 +308,7 @@ function displayRoute(data) {
         }).addTo(map);
     }
 
-
+    // overall eating option search area
     if (data.eating_option_polygon) {
         var foursquarePolygonPoints = decodePolyline(data.eating_option_polygon);
         var foursquarePolygon = L.polygon(foursquarePolygonPoints, {
@@ -317,6 +318,7 @@ function displayRoute(data) {
         }).addTo(map);
     }
 
+    // radial search circles for eating options
     if (data.eating_search_circles) {
         data.eating_search_circles.forEach(encodedCircle => {
             var searchCirclePoints = decodePolyline(encodedCircle);
@@ -341,18 +343,6 @@ function displayRoute(data) {
         }
     });
 
-    // add markers for food establishments from backend response
-    // data.food_establishments.forEach(establishment => {
-    //     if (establishment.geocodes) {
-    //         const content = getAllMarkerContent(establishment);
-    //         L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
-    //             .bindPopup(content)
-    //             .addTo(map);
-    //         // L.marker([establishment.geocodes.latitude, establishment.geocodes.longitude], {icon: foodIcon})
-    //         //     .bindPopup(`Food Establishment: ${establishment.name}`)
-    //         //     .addTo(map);
-    //     }
-    // });
     let isFirstMarker = true;
     data.food_establishments.forEach(establishment => {
         if (establishment.geocodes) {
@@ -402,68 +392,60 @@ function getAllMarkerContent(dataObject, level = 0) {
 }
 
 // function to decode polyline returned from backend
-function decodePolyline(encoded) {
-    var points = [];
-    var index = 0, len = encoded.length;
-    var lat = 0, lng = 0;
-    while (index < len) {
-        var b, shift = 0, result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        var dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-        lat += dlat;
+// code from https://github.com/mapbox/polyline/blob/master/src/polyline.js
+function decodePolyline(str) {
+    const precision = 5;
 
-        shift = 0;
+    var index = 0,
+        lat = 0,
+        lng = 0,
+        coordinates = [],
+        shift = 0,
+        result = 0,
+        byte = null,
+        latitude_change,
+        longitude_change,
+        factor = Math.pow(10, Number.isInteger(precision) ? precision : 5);
+
+    // Coordinates have variable length when encoded, so just keep
+    // track of whether we've hit the end of the string. In each
+    // loop iteration, a single coordinate is decoded.
+    while (index < str.length) {
+
+        // Reset shift, result, and byte
+        byte = null;
+        shift = 1;
         result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        var dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-        lng += dlng;
 
-        points.push([lat / 1E5, lng / 1E5]);
+        do {
+            byte = str.charCodeAt(index++) - 63;
+            result += (byte & 0x1f) * shift;
+            shift *= 32;
+        } while (byte >= 0x20);
+
+        latitude_change = (result & 1) ? ((-result - 1) / 2) : (result / 2);
+
+        shift = 1;
+        result = 0;
+
+        do {
+            byte = str.charCodeAt(index++) - 63;
+            result += (byte & 0x1f) * shift;
+            shift *= 32;
+        } while (byte >= 0x20);
+
+        longitude_change = (result & 1) ? ((-result - 1) / 2) : (result / 2);
+
+        lat += latitude_change;
+        lng += longitude_change;
+
+        coordinates.push([lat / factor, lng / factor]);
     }
-    return points;
+
+    return coordinates.map(coords => [coords[0], coords[1]]);
+
 }
 
-// function displayResults(data) {
-//     const resultsContainer = document.getElementById('results-content');
-//     resultsContainer.innerHTML = ''; // Clear previous results
-//
-//     const segmentDetails = data.segment_details;
-//     const chargerDetails = data.chargers;
-//
-//     // Iterate over segment durations or any other primary array from segment_details
-//     segmentDetails.segment_durations.forEach((duration, index) => {
-//         const stopElement = document.createElement('div');
-//         stopElement.className = 'route-stop';
-//         stopElement.innerHTML = `
-//             <h4>Segment ${index + 1}</h4>
-//             <p>Duration: ${duration.toFixed(2)} minutes</p>
-//             <p>Distance: ${segmentDetails.segment_distances[index].toFixed(2)} meters</p>
-//             <p>Arrival Charge: ${segmentDetails.arrival_charges[index].toFixed(2) * 100}%</p>
-//             <p>Departing Charge: ${segmentDetails.departing_charges[index].toFixed(2) * 100}%</p>
-//             <p>Departure Time: ${segmentDetails.depart_times[index]}</p>
-//             <p>Arrival Time: ${segmentDetails.arrival_times[index]}</p>
-//         `;
-//
-//         // Optional: Add charger info related to this segment if applicable
-//         if (chargerDetails[index]) {
-//             stopElement.innerHTML += `
-//                 <p>Charger Location: ${chargerDetails[index].address_info.formated_address}</p>
-//                 <p>Charge Power: ${chargerDetails[index].connections[0].power_kw} kW</p>
-//             `;
-//         }
-//
-//         resultsContainer.appendChild(stopElement);
-//     });
-//
-// }
 
 function displayResults(data) {
 
@@ -533,7 +515,7 @@ function displayResults(data) {
             foodElement.innerHTML = `
                 <h6><i class="fas fa-utensils"></i> ${foodEstablishment.name}</h6>
                 <p><i class="fas fa-tag"></i> Price: ${price}</p>
-                <p><i class="fas fa-star"></i> Rating: ${foodEstablishment.rating}/10</p>
+                <p><i class="fas fa-star"></i> Rating: ${(foodEstablishment.rating * 10).toFixed(1)}/10</p>
                 <p><i class="fas fa-list"></i> Category: ${categories}</p>
                 <p><i class="fas fa-map-marker-alt"></i> Address: ${foodEstablishment.address.formated_address}</p>
                 <p><i class="fas fa-link"></i> Website: ${website}</p>
@@ -605,32 +587,7 @@ function populateEnd(endLocation, battery, distance, finalArrivalTime) {
         `;
 }
 
-// const startBattery = `${((data.segment_details.departing_charges[0] * 100).toFixed(1))}%`;
-// const initialDepartTime = data.segment_details.depart_times[0];
-// console.log(initialDepartTime)
-// populateStart(startLoc, startBattery, initialDepartTime)
-//
-// const endBattery = `${((data.segment_details.arrival_charges[data.segment_details.arrival_charges.length - 1] * 100).toFixed(1))}%`;
-// const endSegmentDistance = formatMetersToKm(data.segment_details.segment_distances[data.segment_details.segment_distances.length - 1]);
-// const finalArrivalTime = data.segment_details.arrival_times[data.segment_details.arrival_times.length - 1];
-// populateEnd(endLoc, endBattery, endSegmentDistance, finalArrivalTime)
-
-
-
-// function decodeEatingOptionPolygon(encodedString) {
-//     // Split the string by '~' to get each coordinate pair
-//     const pairs = encodedString.split('~');
-//     // Map over each pair, split by ',', and convert each to a float
-//     const points = pairs.map(pair => {
-//         const [lat, lng] = pair.split(',').map(Number);
-//         return [lat, lng];
-//     });
-//     return points;
-// }
-
-
 // custom icon for location
-
 var locationIcon = L.divIcon({
     className: 'custom-div-icon',
     html: "<div style='background-color:blue; border: 2px solid white; border-radius: 50%; width: 15px; height: 15px; box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);'></div>",
@@ -742,9 +699,6 @@ function resetForm() {
     document.getElementById('endLocation').value = '';
     document.getElementById('foodPreferences').value = '';
     document.getElementById('routeForm').reset();
-    // document.getElementById('foodPreferences').selectedIndex = -1;
-    // document.getElementById('connectionTypes').selectedIndex = -1;
-    // document.getElementById('accessTypes').selectedIndex = -1;
 
     var departTimeInput = document.getElementById('departTime');
     if (departTimeInput) {
@@ -915,9 +869,6 @@ function setupAutocomplete(inputId, suggestionsId) {
         }, 200); // delay to allow click event to fire on suggestions
     });
 }
-
-
-
 
 setupAutocomplete('startLocation', 'startSuggestions');
 setupAutocomplete('endLocation', 'endSuggestions');
