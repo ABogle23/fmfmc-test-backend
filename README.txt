@@ -1,7 +1,5 @@
 Project Setup Instructions
 
-OpenAPI docs in yaml and json format are available in the root folder or via the endpoints '/v3/api-docs' and '/v3/api-docs.yaml'.
-
 Prerequisites:
 - IDE with preview: Ensure you have a MySQL server running (locally or hosted) w/ MySQL 8.0 or above.
 - API Keys for the following: Feed me Feed my Car, Mapbox.
