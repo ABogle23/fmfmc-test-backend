@@ -1,7 +1,7 @@
 Project Setup Instructions
 
 Prerequisites:
-- IDE with preview: Ensure you have a MySQL server running (locally or hosted) w/ MySQL 8.0 or above.
+- IDE with preview: IntelliJ or VSCode (with LiveServer extension) are suitable.
 - API Keys for the following: Feed me Feed my Car, Mapbox.
 
 Setup Instructions

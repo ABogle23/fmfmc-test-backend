@@ -1,10 +1,4 @@
 
-/*#container {*/
-/*    display: flex;*/
-/*    height: 90vh;*/
-/*    position: relative; !* Ensure container is positioned relatively *!*/
-/*}*/
-
 html, body {
     height: 100%; /* whole page is height of the viewport */
     margin: 0;
@@ -36,11 +30,6 @@ html, body {
     scrollbar-width: none;
 }
 
-/* sizing for map container */
-/*#map-container {*/
-/*    flex-grow: 1;*/
-/*    height: 100%;*/
-/*}*/
 
 /* styling and positioning for the floating sidebar toggle button */
 #toggleButton {
@@ -61,12 +50,6 @@ html, body {
     z-index: 1500;
 }
 
-
-/*#sidebar {*/
-/*    flex: 1.5;*/
-/*    min-width: 220px;*/
-/*    overflow-y: auto;*/
-/*}*/
 
 /* map container setup */
 #map-container {
@@ -98,11 +81,6 @@ html, body {
     font-size: 18px;
 }
 
-/*.custom-div-icon {*/
-/*    position: relative;*/
-/*    top: -10px;*/
-/*    left: -10px;*/
-/*}*/
 
 /* styling for markers */
 .popup-content {
@@ -110,9 +88,6 @@ html, body {
     overflow-y: auto;
 }
 
-/*label {*/
-/*    display: block;*/
-/*}*/
 
 /* form margins */
 #routeForm div {
@@ -121,10 +96,6 @@ html, body {
     margin-bottom: 10px;
 }
 
-/*#routeForm input, #routeForm select {*/
-/*    width: 150px;*/
-/*    box-sizing: border-box;*/
-/*}*/
 
 /* styling to grey out screen when waiting for response */
 #loadingOverlay {
@@ -142,9 +113,7 @@ html, body {
     color: #FFF;
 }
 
-/*#sidebar.blurred {*/
-/*    backdrop-filter: blur(8px);*/
-/*}*/
+
 
 /* styling and positioning for the range slider */
 .rangeValue {
@@ -210,13 +179,6 @@ input[type="number"]::-webkit-outer-spin-button {
     display: block;
 }
 
-
-/*.route-stop {*/
-/*    border: 1px solid #ccc;*/
-/*    margin: 10px;*/
-/*    padding: 10px;*/
-/*    background-color: #f9f9f9;*/
-/*}*/
 
 /* styling for summary header i.e. destination */
 .summary-header h2 {
@@ -286,7 +248,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 /* for error box */
 #error-container {
-    display: none; /* Initially hidden */
+    display: none;
     color: red;
     background-color: #f8d7da;
     padding: 10px;
@@ -298,10 +260,10 @@ input[type="number"]::-webkit-outer-spin-button {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1000; /* Ensure it appears above other elements */
-    width: 80%; /* Adjust width as needed */
-    max-width: 600px; /* Optional: limit the maximum width */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Optional: add a shadow for better visibility */
+    z-index: 1000; /* appear above other elems */
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 #error-container .close-btn {
     cursor: pointer;
@@ -322,7 +284,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 /* for fallback box */
 #info-container {
-    display: none; /* Initially hidden */
+    display: none;
     color: #0c5460;
     background-color: #d1ecf1;
     padding: 10px;
